@@ -1,0 +1,44 @@
+/* @import must come before @tailwind */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+  body {
+    @apply bg-gray-50 text-gray-900;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent horizontal overflow on all devices */
+    overflow-x: hidden;
+  }
+
+  /* Bengali text — Noto Sans Bengali gives great readability */
+  .font-bn,
+  [lang="bn"],
+  [class*="font-bn"] {
+    font-family: 'Noto Sans Bengali', system-ui, sans-serif;
+    line-height: 1.7;        /* Bengali script needs more line height */
+    letter-spacing: 0.01em;
+  }
+
+  a { color: inherit; text-decoration: none; }
+  img { display: block; max-width: 100%; }
+
+  /* Smooth focus for accessibility */
+  :focus-visible { outline: 2px solid #006A4E; outline-offset: 2px; }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Safe area padding for notched devices (iPhone X+) */
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .safe-top    { padding-top:    env(safe-area-inset-top); }
+}

@@ -1,0 +1,214 @@
+.browse-header {
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--border);
+  padding: 32px 0 24px;
+}
+
+.browse-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.browse-sub {
+  font-size: 14px;
+  color: var(--ink-faint);
+  margin-top: 4px;
+}
+
+.browse-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 32px;
+  padding-top: 32px;
+  padding-bottom: 60px;
+  align-items: start;
+}
+
+/* Filters sidebar */
+.filters {
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  position: sticky;
+  top: 80px;
+}
+
+.filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.filter-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.clear-filters {
+  font-size: 12px;
+  color: var(--red);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+  font-weight: 500;
+}
+
+.clear-filters:hover { text-decoration: underline; }
+
+.filter-group {
+  margin-bottom: 22px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--border);
+}
+
+.filter-group:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.filter-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  margin-bottom: 10px;
+}
+
+.cat-filter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cat-filter-btn {
+  text-align: left;
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font);
+  color: var(--ink-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.cat-filter-btn:hover {
+  background: var(--green-pale);
+  color: var(--green);
+}
+
+.cat-filter-btn.active {
+  background: var(--green-pale);
+  color: var(--green);
+  font-weight: 600;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--surface-card);
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition);
+}
+
+.filter-select:focus { border-color: var(--green); }
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--ink-muted);
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.toggle-row input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--green);
+  cursor: pointer;
+}
+
+/* Worker grid */
+.workers-section { min-height: 400px; }
+
+.workers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+/* Loading skeleton */
+.loading-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.skeleton-card {
+  height: 220px;
+  background: linear-gradient(90deg, var(--border) 25%, var(--surface) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: var(--radius-lg);
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Empty / Error states */
+.empty-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 80px 24px;
+  text-align: center;
+  color: var(--ink-muted);
+}
+
+.empty-icon { font-size: 48px; }
+.empty-state p, .error-state p { font-size: 15px; }
+.error-state span { font-size: 36px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .browse-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .filters {
+    position: static;
+  }
+
+  .cat-filter-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .cat-filter-btn {
+    border: 1px solid var(--border);
+    padding: 5px 12px;
+  }
+}

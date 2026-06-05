@@ -1,0 +1,16 @@
+{
+  "name": "karigori",
+  "version": "1.0.0",
+  "scripts": {
+    "install:all": "cd server && npm install && cd ../client && npm install",
+    "seed": "cd server && node seed/seed.js",
+    "predev": "npx kill-port 5000 3000 3001 3002 3003 3004 3005",
+    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "kill-port": "^2.0.1"
+  }
+}
