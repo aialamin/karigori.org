@@ -14,7 +14,8 @@ const workerSchema = new mongoose.Schema({
   name:          { type: String, required: true },
   phone:         { type: String, required: true },
   email:         { type: String, default: '' },
-  category:      { type: String, required: true },   // no enum — supports custom admin-added categories
+  category:      { type: String, required: true },   // primary trade (first selected)
+  categories:    [{ type: String }],                 // all selected trades (max 3)
   areas:         [{ type: String }],
   rating:        { type: Number, default: 0, min: 0, max: 5 },
   reviewCount:   { type: Number, default: 0 },

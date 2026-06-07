@@ -9,7 +9,13 @@
     <priority>1.0</priority>
   </url>
 
-  <!-- ══ BROWSE (category hubs) ══ -->
+  <!-- ══ CORE INFO PAGES ══ -->
+  <url><loc>https://karigori.org/about</loc><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://karigori.org/blog</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
+  <url><loc>https://karigori.org/help</loc><changefreq>monthly</changefreq><priority>0.60</priority></url>
+  <url><loc>https://karigori.org/pages</loc><changefreq>monthly</changefreq><priority>0.50</priority></url>
+
+  <!-- ══ BROWSE — all category hubs ══ -->
   <url><loc>https://karigori.org/browse</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
   <url><loc>https://karigori.org/browse/plumber</loc><changefreq>daily</changefreq><priority>0.90</priority></url>
   <url><loc>https://karigori.org/browse/electrician</loc><changefreq>daily</changefreq><priority>0.90</priority></url>
@@ -19,41 +25,27 @@
   <url><loc>https://karigori.org/browse/painter</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
   <url><loc>https://karigori.org/browse/gas_fitter</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
   <url><loc>https://karigori.org/browse/bua</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
+  <url><loc>https://karigori.org/browse/isp</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
+  <url><loc>https://karigori.org/browse/rajmistri</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
+  <url><loc>https://karigori.org/browse/contractor</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
 
-  <!-- ══ GAZIPUR LOCAL PAGES (Phase 1 Priority) ══ -->
-  <url><loc>https://karigori.org/gazipur/electrician</loc><changefreq>daily</changefreq><priority>0.92</priority></url>
-  <url><loc>https://karigori.org/gazipur/plumber</loc><changefreq>daily</changefreq><priority>0.92</priority></url>
-  <url><loc>https://karigori.org/gazipur/ac-repair</loc><changefreq>daily</changefreq><priority>0.92</priority></url>
-  <url><loc>https://karigori.org/gazipur/cleaner</loc><changefreq>daily</changefreq><priority>0.88</priority></url>
-  <url><loc>https://karigori.org/gazipur/carpenter</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
-  <url><loc>https://karigori.org/gazipur/painter</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
-  <url><loc>https://karigori.org/gazipur/gas-fitter</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
-  <url><loc>https://karigori.org/gazipur/home-help</loc><changefreq>daily</changefreq><priority>0.82</priority></url>
+  <!-- ══ CITY PAGES ══ -->
+  <url><loc>https://karigori.org/dhaka</loc><changefreq>daily</changefreq><priority>0.92</priority></url>
+  <url><loc>https://karigori.org/gazipur</loc><changefreq>daily</changefreq><priority>0.90</priority></url>
+  <url><loc>https://karigori.org/narayanganj</loc><changefreq>weekly</changefreq><priority>0.82</priority></url>
+  <url><loc>https://karigori.org/chittagong</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://karigori.org/sylhet</loc><changefreq>weekly</changefreq><priority>0.82</priority></url>
+  <url><loc>https://karigori.org/rajshahi</loc><changefreq>weekly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://karigori.org/khulna</loc><changefreq>weekly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://karigori.org/comilla</loc><changefreq>weekly</changefreq><priority>0.78</priority></url>
+  <url><loc>https://karigori.org/mymensingh</loc><changefreq>weekly</changefreq><priority>0.78</priority></url>
+  <url><loc>https://karigori.org/rangpur</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://karigori.org/barishal</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://karigori.org/tongi</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
 
-  <!-- ══ DHAKA LOCAL PAGES (Phase 1 Priority) ══ -->
-  <url><loc>https://karigori.org/dhaka/electrician</loc><changefreq>daily</changefreq><priority>0.92</priority></url>
-  <url><loc>https://karigori.org/dhaka/plumber</loc><changefreq>daily</changefreq><priority>0.92</priority></url>
-  <url><loc>https://karigori.org/dhaka/ac-repair</loc><changefreq>daily</changefreq><priority>0.92</priority></url>
-  <url><loc>https://karigori.org/dhaka/cleaner</loc><changefreq>daily</changefreq><priority>0.88</priority></url>
-  <url><loc>https://karigori.org/dhaka/carpenter</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
-  <url><loc>https://karigori.org/dhaka/painter</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
-  <url><loc>https://karigori.org/dhaka/gas-fitter</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
-  <url><loc>https://karigori.org/dhaka/home-help</loc><changefreq>daily</changefreq><priority>0.82</priority></url>
-
-  <!-- ══ CHITTAGONG LOCAL PAGES (Phase 2) ══ -->
-  <url><loc>https://karigori.org/chittagong/electrician</loc><changefreq>weekly</changefreq><priority>0.80</priority></url>
-  <url><loc>https://karigori.org/chittagong/plumber</loc><changefreq>weekly</changefreq><priority>0.80</priority></url>
-  <url><loc>https://karigori.org/chittagong/ac-repair</loc><changefreq>weekly</changefreq><priority>0.80</priority></url>
-  <url><loc>https://karigori.org/chittagong/cleaner</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
-
-  <!-- ══ NARAYANGANJ LOCAL PAGES ══ -->
-  <url><loc>https://karigori.org/narayanganj/electrician</loc><changefreq>weekly</changefreq><priority>0.78</priority></url>
-  <url><loc>https://karigori.org/narayanganj/plumber</loc><changefreq>weekly</changefreq><priority>0.78</priority></url>
-  <url><loc>https://karigori.org/narayanganj/ac-repair</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
-
-  <!-- ══ INFO PAGES ══ -->
+  <!-- ══ LEGAL PAGES ══ -->
   <url><loc>https://karigori.org/disclaimer</loc><changefreq>monthly</changefreq><priority>0.30</priority></url>
-  <url><loc>https://karigori.org/privacy</loc><changefreq>monthly</changefreq><priority>0.30</priority></url>
-  <url><loc>https://karigori.org/terms</loc><changefreq>monthly</changefreq><priority>0.30</priority></url>
+  <url><loc>https://karigori.org/privacy</loc><changefreq>monthly</changefreq><priority>0.35</priority></url>
+  <url><loc>https://karigori.org/terms</loc><changefreq>monthly</changefreq><priority>0.35</priority></url>
 
 </urlset>

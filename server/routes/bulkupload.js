@@ -19,7 +19,7 @@ const upload = multer({
   },
 });
 
-const VALID_CATEGORIES = ['plumber','electrician','cleaner','bua','painter','ac_repair','carpenter','gas_fitter'];
+const VALID_CATEGORIES = ['plumber','electrician','cleaner','bua','painter','ac_repair','carpenter','gas_fitter','isp','rajmistri','contractor'];
 
 // POST /api/bulk/workers  — parse Excel, preview or insert workers
 router.post('/workers', requireAuth, requireRole('admin'), upload.single('file'), async (req, res) => {
@@ -77,7 +77,7 @@ router.post('/workers', requireAuth, requireRole('admin'), upload.single('file')
 router.get('/template', requireAuth, requireRole('admin'), (req, res) => {
   const headers = [['Name','Phone','Email','Category','Areas','Experience','HourlyRate','Bio','Languages']];
   const sample  = [['Rahim Ahmed','01711-123456','rahim@example.com','electrician','Gazipur Sadar, Tongi','5','400','Licensed electrician, DB board, AC installation','Bengali, English']];
-  const note    = [['CATEGORIES: plumber | electrician | cleaner | bua | painter | ac_repair | carpenter | gas_fitter']];
+  const note    = [['CATEGORIES: plumber | electrician | cleaner | bua | painter | ac_repair | carpenter | gas_fitter | isp | rajmistri | contractor']];
 
   const ws = XLSX.utils.aoa_to_sheet([...headers, ...sample, [], ...note]);
   const wb = XLSX.utils.book_new();

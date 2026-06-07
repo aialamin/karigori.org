@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Wrench, User, ArrowRight, Lock, AtSign, CheckCircle2, KeyRound } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -259,6 +260,10 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Helmet>
+        <title>লগইন | কারিগরি</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       {forgot && <ForgotModal onClose={() => setForgot(false)} />}
 
       {/* Hero strip */}

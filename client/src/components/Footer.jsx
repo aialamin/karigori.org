@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
-import { Wrench, ShieldCheck, FileText, Lock, BookOpen } from 'lucide-react';
+import { Wrench, ShieldCheck, FileText, Lock, BookOpen, LayoutGrid, HelpCircle, TrendingUp } from 'lucide-react';
 
 const Footer = memo(function Footer() {
   return (
@@ -32,6 +32,15 @@ const Footer = memo(function Footer() {
               <Link to="/browse"   className="block hover:text-white transition-colors font-bn">কারিগর খুঁজুন</Link>
               <Link to="/blog"     className="flex items-center gap-1.5 hover:text-white transition-colors font-bn">
                 <BookOpen className="w-3.5 h-3.5 shrink-0" /> ব্লগ
+              </Link>
+              <Link to="/pages"    className="flex items-center gap-1.5 hover:text-white transition-colors font-bn">
+                <LayoutGrid className="w-3.5 h-3.5 shrink-0" /> শহরভিত্তিক সেবা
+              </Link>
+              <Link to="/help"     className="flex items-center gap-1.5 hover:text-white transition-colors font-bn">
+                <HelpCircle className="w-3.5 h-3.5 shrink-0" /> সাহায্য
+              </Link>
+              <Link to="/price-guide/electrician" className="flex items-center gap-1.5 hover:text-white transition-colors font-bn">
+                <TrendingUp className="w-3.5 h-3.5 shrink-0" /> প্রাইস গাইড
               </Link>
               <Link to="/register" className="block hover:text-white transition-colors font-bn">রেজিস্টার করুন</Link>
               <Link to="/login"    className="block hover:text-white transition-colors font-bn">সাইন ইন</Link>

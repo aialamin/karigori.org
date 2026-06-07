@@ -18,7 +18,7 @@ function genOtp() {
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, role, phone, area,
-            category, experience, hourlyRate, bio, areas, languages, subcategories } = req.body;
+            category, categories, experience, hourlyRate, bio, areas, languages, subcategories } = req.body;
 
     if (!['worker', 'client'].includes(role))
       return res.status(400).json({ message: 'Invalid role' });
@@ -38,7 +38,8 @@ router.post('/register', async (req, res) => {
     if (role === 'worker') {
       workerProfile = await Worker.create({
         userId: user._id, name, phone, email,
-        category: category || 'plumber',
+        category: (Array.isArray(categories) ? categories[0] : category) || 'plumber',
+        categories: Array.isArray(categories) ? categories.slice(0, 3) : (category ? [category] : []),
         experience: parseInt(experience) || 1,
         hourlyRate: parseInt(hourlyRate) || undefined,
         bio: bio || '',
@@ -117,7 +118,7 @@ router.post('/send-otp', requireAuth, async (req, res) => {
 
     // ── Production: replace this with Twilio / Firebase SMS ──
     // await twilio.messages.create({ body: `Karigori OTP: ${otp}`, from: ..., to: worker.phone });
-    console.log(`[DEV] OTP for ${worker.phone}: ${otp}`);
+    if (process.env.NODE_ENV !== 'production') console.log(`[DEV] OTP for ${worker.phone}: ${otp}`);
 
     res.json({
       message: 'OTP sent to ' + worker.phone,
@@ -169,7 +170,7 @@ router.post('/forgot-password', async (req, res) => {
     await user.save();
 
     // Production: send email here via nodemailer / SendGrid
-    console.log(`[DEV] Password reset OTP for ${email}: ${otp}`);
+    if (process.env.NODE_ENV !== 'production') console.log(`[DEV] Password reset OTP for ${email}: ${otp}`);
 
     res.json({
       message: 'OTP পাঠানো হয়েছে',

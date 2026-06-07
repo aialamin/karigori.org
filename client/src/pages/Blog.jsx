@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import {
@@ -6,9 +6,9 @@ import {
   TrendingUp, Eye, BookOpen, Bell, ChevronRight,
   Wrench, Zap, Wind, Sparkles, Bug, Paintbrush,
   Camera, Droplets, Home, Star, Filter, X,
-  CheckCircle2, Mail, Phone, MapPin, ExternalLink,
+  CheckCircle2, Mail, Phone, MapPin, ExternalLink, Loader2,
 } from 'lucide-react';
-import { BLOGS } from '../data/blogData.js';
+import { BLOGS as STATIC_BLOGS } from '../data/blogData.js';
 
 /* ─────────────────────────────────────────────
    COLORS
@@ -32,7 +32,7 @@ const CATEGORIES = [
   { key: 'interior',     label: 'ইন্টেরিয়র ডিজাইন', labelEn: 'Interior Design',    Icon: Home,       color: '#9333ea', bg: '#f3e8ff' },
 ];
 
-/* blog data imported from blogData.js above — no local copy needed */
+/* Blog data: dynamic from API, static as fallback */
 
 const FAQS = [
   {
@@ -61,8 +61,7 @@ const FAQS = [
   },
 ];
 
-const TRENDING = BLOGS.slice(0, 4);
-const RECENT   = [...BLOGS].sort(() => Math.random() - 0.5).slice(0, 5);
+// TRENDING and RECENT are computed dynamically in component
 
 /* ─────────────────────────────────────────────
    HELPERS
@@ -108,26 +107,7 @@ function CategoryBadge({ catKey, small }) {
 ───────────────────────────────────────────── */
 const BASE_URL = 'https://karigori.com';
 
-const blogListSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Blog',
-  name: 'কারিগরি ব্লগ',
-  description: 'বাংলাদেশের সেরা হোম সার্ভিস টিপস ও গাইড',
-  url: `${BASE_URL}/blog`,
-  publisher: {
-    '@type': 'Organization',
-    name: 'কারিগরি',
-    logo: { '@type': 'ImageObject', url: `${BASE_URL}/logo.png` },
-  },
-  blogPost: BLOGS.slice(0, 6).map((b) => ({
-    '@type': 'BlogPosting',
-    headline: b.title,
-    description: b.metaDesc,
-    url: `${BASE_URL}/blog/${b.slug}`,
-    datePublished: '2025-05-01',
-    author: { '@type': 'Person', name: b.author.name },
-  })),
-};
+// blogListSchema is now built dynamically in component from API data
 
 const faqSchema = {
   '@context': 'https://schema.org',
@@ -157,6 +137,16 @@ export default function Blog() {
   const [openFaq,     setOpenFaq]     = useState(null);
   const [email,       setEmail]       = useState('');
   const [subDone,     setSubDone]     = useState(false);
+  const [BLOGS,       setBlogs]       = useState(STATIC_BLOGS);
+  const [blogsLoading, setBlogsLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/blogs?limit=50')
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.blogs?.length) setBlogs(d.blogs); })
+      .catch(() => {})
+      .finally(() => setBlogsLoading(false));
+  }, []);
 
   const filtered = useMemo(() => {
     let list = BLOGS;
@@ -164,15 +154,34 @@ export default function Blog() {
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter((b) =>
-        b.title.toLowerCase().includes(q) ||
-        b.excerpt.toLowerCase().includes(q) ||
-        b.tags.some((t) => t.toLowerCase().includes(q)),
+        b.title?.toLowerCase().includes(q) ||
+        b.excerpt?.toLowerCase().includes(q) ||
+        (b.tags || []).some((t) => t.toLowerCase().includes(q)),
       );
     }
     return list;
-  }, [search, activeCat]);
+  }, [search, activeCat, BLOGS]);
 
   const featured = BLOGS.filter((b) => b.featured);
+  const TRENDING = BLOGS.slice(0, 4);
+  const RECENT   = [...BLOGS].sort(() => Math.random() - 0.5).slice(0, 5);
+
+  const blogListSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    name: 'কারিগরি ব্লগ',
+    description: 'বাংলাদেশের সেরা হোম সার্ভিস টিপস ও গাইড',
+    url: `${BASE_URL}/blog`,
+    publisher: { '@type': 'Organization', name: 'কারিগরি', logo: { '@type': 'ImageObject', url: `${BASE_URL}/logo.png` } },
+    blogPost: BLOGS.slice(0, 6).map((b) => ({
+      '@type': 'BlogPosting',
+      headline: b.title,
+      description: b.metaDesc || b.excerpt,
+      url: `${BASE_URL}/blog/${b.slug}`,
+      datePublished: b.createdAt || '2025-05-01',
+      author: { '@type': 'Person', name: b.author?.name || 'কারিগরি টিম' },
+    })),
+  };
 
   return (
     <>
@@ -377,9 +386,9 @@ export default function Blog() {
 
             {/* ── RIGHT: Sidebar ── */}
             <aside className="w-full lg:w-72 shrink-0 space-y-5">
-              <TrendingWidget />
-              <CategoryWidget activeCat={activeCat} onSelect={setActiveCat} />
-              <RecentWidget />
+              <TrendingWidget blogs={TRENDING} />
+              <CategoryWidget activeCat={activeCat} onSelect={setActiveCat} allBlogs={BLOGS} />
+              <RecentWidget blogs={RECENT} />
               <NewsletterWidget />
             </aside>
           </div>
@@ -632,7 +641,7 @@ function BlogCard({ blog }) {
   );
 }
 
-function TrendingWidget() {
+function TrendingWidget({ blogs = [] }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="px-4 py-3.5 border-b border-gray-50 flex items-center gap-2">
@@ -640,7 +649,7 @@ function TrendingWidget() {
         <h3 className="font-black text-sm text-gray-900">ট্রেন্ডিং পোস্ট</h3>
       </div>
       <div className="divide-y divide-gray-50">
-        {TRENDING.map((blog, i) => (
+        {blogs.map((blog, i) => (
           <Link key={blog.id} to={`/blog/${blog.slug}`}
             className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors group">
             <span className="font-black text-2xl shrink-0 leading-none mt-0.5"
@@ -663,7 +672,7 @@ function TrendingWidget() {
   );
 }
 
-function CategoryWidget({ activeCat, onSelect }) {
+function CategoryWidget({ activeCat, onSelect, allBlogs = [] }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="px-4 py-3.5 border-b border-gray-50 flex items-center gap-2">
@@ -672,7 +681,7 @@ function CategoryWidget({ activeCat, onSelect }) {
       </div>
       <div className="p-3 space-y-1">
         {CATEGORIES.map((c) => {
-          const count = BLOGS.filter((b) => b.category === c.key).length;
+          const count = allBlogs.filter((b) => b.category === c.key).length;
           const active = activeCat === c.key;
           return (
             <button key={c.key} onClick={() => onSelect(c.key)}
@@ -691,7 +700,7 @@ function CategoryWidget({ activeCat, onSelect }) {
   );
 }
 
-function RecentWidget() {
+function RecentWidget({ blogs = [] }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="px-4 py-3.5 border-b border-gray-50 flex items-center gap-2">
@@ -699,7 +708,7 @@ function RecentWidget() {
         <h3 className="font-black text-sm text-gray-900">সাম্প্রতিক পোস্ট</h3>
       </div>
       <div className="divide-y divide-gray-50">
-        {RECENT.map((blog) => (
+        {blogs.map((blog) => (
           <Link key={blog.id} to={`/blog/${blog.slug}`}
             className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors group">
             <BlogImage blog={blog} style={{ width:44, height:44, borderRadius:10, flexShrink:0 }} />

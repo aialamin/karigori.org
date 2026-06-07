@@ -2,6 +2,10 @@ User-agent: *
 Allow: /
 Allow: /browse
 Allow: /worker/
+Allow: /about
+Allow: /blog
+Allow: /help
+Allow: /pages
 Allow: /disclaimer
 Allow: /privacy
 Allow: /terms

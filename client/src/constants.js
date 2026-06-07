@@ -8,6 +8,9 @@ export const CATEGORIES = [
   { key: 'ac_repair',   label: 'AC Repair',   labelBn: 'এসি মেকানিক',    color: '#2980b9', bg: '#eaf3fb' },
   { key: 'carpenter',   label: 'Carpenter',   labelBn: 'কাঠমিস্ত্রি',     color: '#7d4f2a', bg: '#f5ede5' },
   { key: 'gas_fitter',  label: 'Gas Fitter',  labelBn: 'গ্যাস ফিটার',     color: '#e05c00', bg: '#fdf0e6' },
+  { key: 'isp',         label: 'ISP/Internet',labelBn: 'ইন্টারনেট সেবা',  color: '#8b5cf6', bg: '#f5f3ff' },
+  { key: 'rajmistri',   label: 'Rajmistri',   labelBn: 'রাজমিস্ত্রি',      color: '#b45309', bg: '#fef3c7' },
+  { key: 'contractor',  label: 'Contractor',  labelBn: 'কন্ট্রাক্টর',      color: '#0369a1', bg: '#e0f2fe' },
 ];
 
 export const getCategoryInfo = (key, extraCategories = []) =>

@@ -41,6 +41,8 @@ export default function Navbar() {
             { to: '/',       label: 'হোম' },
             { to: '/browse', label: 'কারিগর খুঁজুন' },
             { to: '/blog',   label: 'ব্লগ' },
+            { to: '/pages',  label: 'শহরভিত্তিক সেবা' },
+            { to: '/about',  label: 'আমাদের সম্পর্কে' },
           ].map(({ to, label }) => (
             <Link key={to} to={to}
               className={`px-4 py-2 rounded-full text-sm font-semibold transition-all
@@ -128,6 +130,9 @@ export default function Navbar() {
             { to: '/',       label: 'হোম' },
             { to: '/browse', label: 'কারিগর খুঁজুন' },
             { to: '/blog',   label: 'ব্লগ' },
+            { to: '/pages',  label: 'শহরভিত্তিক সেবা' },
+            { to: '/about',  label: 'আমাদের সম্পর্কে' },
+            { to: '/help',   label: 'সাহায্য' },
           ].map(({ to, label }) => (
             <Link key={to} to={to} onClick={() => setMob(false)}
               className={`flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition-colors

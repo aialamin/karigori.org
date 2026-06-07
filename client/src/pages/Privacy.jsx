@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { ShieldCheck, Lock, Eye, Database, Bell, Mail, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -62,6 +63,12 @@ export default function Privacy() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
+      <Helmet>
+        <title>গোপনীয়তা নীতি | কারিগরি</title>
+        <meta name="description" content="কারিগরি আপনার তথ্য কীভাবে সংগ্রহ, ব্যবহার ও সুরক্ষা করে তা জানুন। আমাদের গোপনীয়তা নীতি পড়ুন।" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://karigori.org/privacy" />
+      </Helmet>
 
       {/* Hero */}
       <div className="bg-gradient-to-br from-brand-700 to-emerald-800 text-white">

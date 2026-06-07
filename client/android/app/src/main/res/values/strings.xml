@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">কারিগরি</string>
+    <string name="title_activity_main">কারিগরি</string>
+    <string name="package_name">com.karigori.app</string>
+    <string name="custom_url_scheme">com.karigori.app</string>
+</resources>

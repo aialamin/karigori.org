@@ -33,7 +33,7 @@ export default function Browse() {
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState(null);
   const [selectedCat, setSelectedCat] = useState(catParam || '');
-  const [selectedArea, setSelectedArea] = useState('');
+  const [selectedArea, setSelectedArea] = useState(searchParams.get('area') || '');
   const [onlyAvailable, setOnlyAvailable] = useState(false);
   const [onlyVerified, setOnlyVerified]   = useState(false);
   const [sort, setSort]               = useState('default');
@@ -339,7 +339,7 @@ export default function Browse() {
 
         {/* Desktop Sidebar */}
         <aside className="hidden sm:block w-52 shrink-0">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sticky top-20">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
             <Sidebar />
           </div>
         </aside>

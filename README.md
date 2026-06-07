@@ -1,173 +1,290 @@
-# Karigori
+# কারিগরি — Karigori
 
-Karigori is a Dhaka-focused local service marketplace where customers can discover, filter, review, and contact verified service professionals. The app includes public browsing, worker registration, worker profile management, client accounts, admin approval tools, document upload flows, and review/report features.
+**Bangladesh's local service marketplace** — Find verified plumbers, electricians, cleaners, masons, ISP technicians, contractors, and more across Bangladesh. Fully bilingual (বাংলা + English), mobile-first PWA.
 
-## Live Deployment Plan
+🌐 **Live:** [karigori.org](https://karigori.org) &nbsp;|&nbsp; **Repo:** [github.com/aialamin/karigori.org](https://github.com/aialamin/karigori.org)
 
-- Frontend: Vercel
-- Backend API: Render
-- Database: MongoDB Atlas
-
-The frontend is built from `client/`. The backend is built from `server/`.
+---
 
 ## Features
 
-- Browse workers by service category, area, availability, and verification status
-- Worker profile pages with contact actions and reviews
-- User registration and login for clients and workers
-- Worker dashboard for profile updates, photo uploads, and document uploads
-- Admin dashboard for approvals, rejection notes, flags, client lists, and stats
-- JWT authentication
-- MongoDB Atlas storage through Mongoose
-- Demo seed data for testing the deployed app
+### For Customers
+- **Browse & Search** — Filter workers by category, area, availability, verification status, rating, price
+- **11 Service Categories** — Plumber, Electrician, Cleaner, Bua, Painter, AC Mechanic, Carpenter, Gas Fitter, ISP/Internet, Mason (রাজমিস্ত্রি), Contractor
+- **City Pages** — `/dhaka`, `/gazipur`, `/narayanganj`, `/chittagong`, `/sylhet`, `/rajshahi` — auto-shows only workers in that city
+- **Worker Profiles** — Ratings, reviews, verified badge, contact button, report option
+- **Price Guide** — Estimated price ranges per service category
+- **Blog** — Service tips and guides
+- **PWA** — Installable on Android/iOS, works offline
+
+### For Service Providers (Workers)
+- **Registration** — Select up to **3 trade categories** (primary + secondary)
+- **Division → Zila → Upazila area picker** — Hierarchical checkbox tree with bulk select, search, and popular city quick-pills
+- **Profile Dashboard** — Update bio, rates, availability, areas, upload photo
+- **Document Upload** — NID front/back, selfie with NID (Level 2 verification)
+- **Phone OTP Verification** — Level 1 badge after phone verify
+- **Password Reset** — OTP-based forgot password flow
+
+### Admin Panel (`/admin`)
+- Worker approval / rejection with notes
+- Flag / unflag workers
+- Client list management
+- Bulk CSV upload of workers
+- Dynamic site config (extra categories, notice modal)
+- Live stats dashboard
+
+### Platform
+- **Dynamic Stats** — Homepage stats (worker count, categories, areas, jobs) fetched live from DB with 60s cache
+- **SEO** — Structured data, city-specific meta, sitemap, canonical URLs
+- **JWT Auth** — 30-day tokens, role-based (worker / client / admin)
+- **Image optimization** — Auto-converts uploads to WebP via Sharp
+
+---
 
 ## Tech Stack
 
-- React 18
-- Vite
-- Express.js
-- MongoDB Atlas
-- Mongoose
-- JWT
-- Multer
-- Tailwind CSS
+| Layer | Technology |
+|---|---|
+| Frontend | React 18.3, Vite 5, Tailwind CSS 3, PWA |
+| Backend | Node.js, Express.js |
+| Database | MongoDB Atlas + Mongoose |
+| Auth | JWT (jsonwebtoken) |
+| File Uploads | Multer + Sharp (→ WebP) |
+| Deployment | Vercel (frontend) + Render (backend) |
+
+---
 
 ## Project Structure
 
-```text
-karigori/
-  client/          React + Vite frontend
-  server/          Express + Mongoose backend
-  render.yaml      Render backend blueprint
-  vercel.json      Vercel frontend build config
-  package.json     Root scripts for local development
 ```
+karigori/
+├── client/                  React + Vite PWA frontend
+│   ├── src/
+│   │   ├── pages/           All route pages
+│   │   │   ├── Home.jsx          Homepage with live stats
+│   │   │   ├── Browse.jsx        Search/filter all workers
+│   │   │   ├── CityPage.jsx      City-scoped worker pages
+│   │   │   ├── WorkerProfile.jsx Worker detail page
+│   │   │   ├── Register.jsx      Worker/client registration
+│   │   │   ├── WorkerDashboard.jsx  Worker profile editor
+│   │   │   ├── ClientDashboard.jsx  Client account
+│   │   │   ├── AdminDashboard.jsx   Admin panel
+│   │   │   ├── AllPages.jsx      Static info pages
+│   │   │   ├── PriceGuide.jsx    Service pricing page
+│   │   │   └── Blog.jsx / BlogPost.jsx
+│   │   ├── components/      Reusable components
+│   │   │   ├── ServiceAreaPicker.jsx  Division→Zila→Upazila picker
+│   │   │   ├── CategoryIcon.jsx       Category icon mapping
+│   │   │   ├── WorkerCard.jsx         Worker listing card
+│   │   │   └── ...
+│   │   ├── data/
+│   │   │   ├── bangladesh.js     All 8 divisions, 64 districts, ~490 upazilas
+│   │   │   ├── siteData.js       Service category data
+│   │   │   └── categories.js     Category → subcategory tree
+│   │   └── constants.js          CATEGORIES, BANGLADESH_LOCATIONS
+│   └── public/
+├── server/                  Express + Mongoose API
+│   ├── models/
+│   │   ├── Worker.js        Worker schema (categories[], areas[], verification)
+│   │   ├── User.js          User schema (worker / client / admin)
+│   │   └── Review.js        Review schema
+│   ├── routes/
+│   │   ├── auth.js          Register, login, OTP, password reset
+│   │   ├── workers.js       Public worker listing + reviews
+│   │   ├── profile.js       Worker/client profile update + file uploads
+│   │   ├── admin.js         Admin moderation endpoints
+│   │   ├── stats.js         Live platform stats (60s cache)
+│   │   ├── config.js        Dynamic site config
+│   │   ├── bulkupload.js    CSV bulk worker import
+│   │   └── analytics.js     Usage analytics
+│   ├── middleware/auth.js   JWT verify + role guard
+│   ├── seed.js              Demo data seed
+│   └── seed-new-services.js ISP / Rajmistri / Contractor sample data
+├── render.yaml              Render backend deployment config
+├── vercel.json              Vercel frontend build config
+└── package.json             Root dev scripts
+```
+
+---
 
 ## Local Setup
 
-Install dependencies:
+### 1. Install dependencies
 
 ```bash
+# Root (concurrent dev runner)
 npm install
+
+# Backend
 cd server && npm install
+
+# Frontend
 cd ../client && npm install
 ```
 
-Create `server/.env`:
+### 2. Create `server/.env`
 
-```bash
+```env
 PORT=5000
-MONGO_URI=mongodb+srv://YOUR_ATLAS_USER:YOUR_ATLAS_PASSWORD@YOUR_CLUSTER.mongodb.net/karigori?appName=Cluster0
+MONGO_URI=mongodb+srv://YOUR_USER:YOUR_PASSWORD@cluster.mongodb.net/karigori
 JWT_SECRET=replace-with-a-long-random-secret
 CLIENT_URL=http://localhost:3000
+NODE_ENV=development
 ```
 
-Create `client/.env`:
+### 3. Create `client/.env`
 
-```bash
+```env
 VITE_API_URL=http://localhost:5000
 ```
 
-Run both apps:
+### 4. Run dev servers
 
 ```bash
 npm run dev
 ```
 
-Open:
+- Frontend → `http://localhost:3000`
+- Backend → `http://localhost:5000/api/health`
 
-- Frontend: `http://localhost:3000`
-- Backend health check: `http://localhost:5000/api/health`
+---
 
-## Demo Data
-
-The seed script creates test workers, reviews, and an admin account.
+## Seed Data
 
 ```bash
 cd server
+
+# Core demo workers (all 8 original categories)
 npm run seed
+
+# New service workers (ISP, Rajmistri, Contractor)
+node seed-new-services.js
 ```
 
-Seeded admin login:
-
-```text
-Email: admin@karigori.com
+**Admin login after seed:**
+```
+Email:    admin@karigori.com
 Password: admin123
 ```
 
-Important: the seed script clears existing worker and review records before inserting demo data. Use it for testing or demo databases, not for a production database with real users.
+> ⚠️ Seed scripts clear existing workers/reviews. Use only on test/demo databases.
 
-## Render Backend Deployment
+---
 
-Deploy the backend using Render from this GitHub repository. The included `render.yaml` configures Render to use the `server` directory.
+## API Reference
 
-Render environment variables:
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/health` | — | Health check |
+| GET | `/api/stats` | — | Live platform stats (60s cache) |
+| GET | `/api/workers` | — | List approved workers (filter: category, area, q, available, sort, page) |
+| GET | `/api/workers/:id` | — | Worker profile |
+| GET | `/api/workers/:id/reviews` | — | Worker reviews |
+| POST | `/api/workers/:id/reviews` | — | Submit review |
+| POST | `/api/workers/:id/report` | — | Report worker |
+| POST | `/api/auth/register` | — | Register (worker or client) |
+| POST | `/api/auth/login` | — | Login |
+| GET | `/api/auth/me` | JWT | Current user |
+| POST | `/api/auth/send-otp` | JWT | Send phone OTP |
+| POST | `/api/auth/verify-otp` | JWT | Verify phone OTP |
+| POST | `/api/auth/forgot-password` | — | Send reset OTP |
+| POST | `/api/auth/reset-password` | — | Reset password |
+| GET | `/api/profile/worker` | JWT worker | Get own profile |
+| PUT | `/api/profile/worker` | JWT worker | Update profile (bio, areas, categories, rate) |
+| POST | `/api/profile/worker/photo` | JWT worker | Upload profile photo |
+| POST | `/api/profile/worker/selfie` | JWT worker | Upload NID selfie |
+| POST | `/api/profile/worker/documents` | JWT worker | Upload NID + certificates |
+| PUT | `/api/profile/client` | JWT client | Update client profile |
+| GET | `/api/admin/stats` | JWT admin | Admin dashboard stats |
+| GET | `/api/admin/workers` | JWT admin | Worker moderation list |
+| PUT | `/api/admin/workers/:id` | JWT admin | Approve/reject/flag worker |
+| GET | `/api/admin/clients` | JWT admin | Client list |
+| GET | `/api/config` | — | Dynamic site config |
+| PUT | `/api/config` | JWT admin | Update site config |
+| POST | `/api/bulkupload` | JWT admin | Bulk CSV worker import |
 
-```bash
+---
+
+## Service Categories (11)
+
+| Key | English | বাংলা | Icon |
+|---|---|---|---|
+| `plumber` | Plumber | প্লাম্বার | 🔧 |
+| `electrician` | Electrician | ইলেক্ট্রিশিয়ান | ⚡ |
+| `cleaner` | Cleaner | ক্লিনার | ✨ |
+| `bua` | Bua / House Help | বুয়া | 🏠 |
+| `painter` | Painter | পেইন্টার | 🖌️ |
+| `ac_repair` | AC Mechanic | এসি মেকানিক | 🌬️ |
+| `carpenter` | Carpenter | কাঠমিস্ত্রি | 🔨 |
+| `gas_fitter` | Gas Fitter | গ্যাস ফিটার | 🔥 |
+| `isp` | ISP / Internet | ইন্টারনেট সেবা | 📶 |
+| `rajmistri` | Mason | রাজমিস্ত্রি | 👷 |
+| `contractor` | Contractor | কন্ট্রাক্টর | 🏢 |
+
+---
+
+## City Pages
+
+Each city page auto-fetches workers whose service areas include that city's upazilas. All category filters and search on city pages carry the city tag through to Browse.
+
+| Route | City |
+|---|---|
+| `/dhaka` | ঢাকা |
+| `/gazipur` | গাজীপুর |
+| `/narayanganj` | নারায়ণগঞ্জ |
+| `/chittagong` | চট্টগ্রাম |
+| `/sylhet` | সিলেট |
+| `/rajshahi` | রাজশাহী |
+
+---
+
+## Deployment
+
+### Backend → Render
+
+Set environment variables in Render dashboard:
+
+```env
 NODE_ENV=production
-MONGO_URI=your MongoDB Atlas connection string
-JWT_SECRET=a long random secret
-CLIENT_URL=https://your-vercel-app.vercel.app
+MONGO_URI=your-atlas-connection-string
+JWT_SECRET=your-long-random-secret
+CLIENT_URL=https://your-app.vercel.app
 ```
 
-Render build command:
+Build command: `npm install`
+Start command: `npm start`
 
-```bash
-npm install
+Health check: `https://your-service.onrender.com/api/health`
+
+### Frontend → Vercel
+
+Set environment variable in Vercel dashboard:
+
+```env
+VITE_API_URL=https://your-service.onrender.com
 ```
 
-Render start command:
+After deploying frontend, update Render's `CLIENT_URL` to your Vercel URL and redeploy backend.
 
-```bash
-npm start
-```
+---
 
-After deployment, verify:
+## Security
 
-```text
-https://your-render-service.onrender.com/api/health
-```
+- Never commit `server/.env`, `client/.env`, or any credentials
+- `server/uploads/` is git-ignored — never commit user documents
+- Rotate any DB password that has been shared or exposed
+- `JWT_SECRET` and `MONGO_URI` must only live in Render environment variables in production
 
-## Vercel Frontend Deployment
+---
 
-Deploy the frontend using Vercel from this GitHub repository. The included `vercel.json` builds the Vite app from `client/`.
+## Worker Verification Levels
 
-Vercel environment variable:
+| Level | Badge | Requirement |
+|---|---|---|
+| 0 | Pending | Registered, awaiting admin review |
+| 1 | ✓ Verified | Phone OTP verified + admin approved |
+| 2 | ✓✓ ID Verified | Selfie with NID uploaded + admin approved |
 
-```bash
-VITE_API_URL=https://your-render-service.onrender.com
-```
+---
 
-After the final Vercel URL is created, update Render's `CLIENT_URL` value to that exact Vercel URL and redeploy the backend.
-
-## API Overview
-
-| Method | Endpoint | Description |
-| --- | --- | --- |
-| GET | `/api/health` | Backend health check |
-| GET | `/api/workers` | List approved workers |
-| GET | `/api/workers/:id` | Worker profile |
-| GET | `/api/workers/:id/reviews` | Worker reviews |
-| POST | `/api/workers/:id/reviews` | Add a review |
-| POST | `/api/workers/:id/report` | Report a worker |
-| POST | `/api/auth/register` | Register a user |
-| POST | `/api/auth/login` | Log in |
-| GET | `/api/auth/me` | Current user |
-| GET | `/api/profile/worker` | Worker dashboard profile |
-| PUT | `/api/profile/worker` | Update worker profile |
-| GET | `/api/profile/client` | Client dashboard profile |
-| GET | `/api/admin/stats` | Admin stats |
-| GET | `/api/admin/workers` | Admin worker moderation list |
-| GET | `/api/admin/clients` | Admin client list |
-
-## Security Notes
-
-- Do not commit `server/.env`, `client/.env`, MongoDB credentials, JWT secrets, or uploaded identity documents.
-- Store `MONGO_URI` and `JWT_SECRET` in Render environment variables.
-- Store `VITE_API_URL` in Vercel environment variables.
-- Rotate any database password that has been shared publicly or in chat.
-- Uploaded files in `server/uploads` are ignored by Git.
-
-## Repository
-
-GitHub: https://github.com/aialamin/karigori.org
+*Built with ❤️ for Bangladesh — কারিগরিকে বিশ্বাস করুন*

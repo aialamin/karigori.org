@@ -43,10 +43,13 @@ router.get('/worker', requireAuth, requireRole('worker'), async (req, res) => {
 // PUT /api/profile/worker — update text fields
 router.put('/worker', requireAuth, requireRole('worker'), async (req, res) => {
   try {
-    const { bio, areas, hourlyRate, experience, languages, available, phone, nidNumber, subcategories } = req.body;
+    const { bio, areas, hourlyRate, experience, languages, available, phone, nidNumber, subcategories, categories } = req.body;
+    const cats = Array.isArray(categories) ? categories.slice(0, 3) : undefined;
+    const update = { bio, areas, hourlyRate: parseInt(hourlyRate) || undefined, experience: parseInt(experience) || 1, languages, available, phone, nidNumber: nidNumber || '', subcategories: subcategories || [] };
+    if (cats?.length) { update.categories = cats; update.category = cats[0]; }
     const worker = await Worker.findOneAndUpdate(
       { userId: req.user._id },
-      { bio, areas, hourlyRate: parseInt(hourlyRate) || undefined, experience: parseInt(experience) || 1, languages, available, phone, nidNumber: nidNumber || '', subcategories: subcategories || [] },
+      update,
       { new: true }
     );
     if (!worker) return res.status(404).json({ message: 'Profile not found' });

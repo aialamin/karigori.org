@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Wrench, User, Eye, EyeOff, CheckCircle2, ChevronRight, ChevronLeft,
@@ -9,6 +10,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useConfig } from '../context/ConfigContext.jsx';
 import { getSubcategoriesForCategory } from '../data/categories.js';
 import { CategoryIcon } from '../components/CategoryIcon.jsx';
+import ServiceAreaPicker from '../components/ServiceAreaPicker.jsx';
 import { FloatInput, FloatTextarea, Alert, Spinner, FieldError } from '../components/ui.jsx';
 
 /* ── File upload card (single) ── */
@@ -93,20 +95,29 @@ function WorkerRegister() {
   const fileRef   = useRef(null);
 
   const [step, setStep]         = useState(1);
-  const [areaSearch, setAreaSearch] = useState('');
   const [showPass, setShow]     = useState(false);
   const [submitting, setSub]    = useState(false);
   const [errors, setErrors]     = useState({});
   const [selectedAreas,  setAreas]    = useState([]);
   const [selectedSvcs,   setSvcs]     = useState([]);  // selected subcategory services
+  const [selectedCats,   setCats]     = useState([]);  // selected trades (max 3)
 
   // Step 1
   const [form, setForm] = useState({ name: '', email: '', password: '', phone: '' });
 
   // Step 2
   const [prof, setProf] = useState({
-    category: '', experience: '', hourlyRate: '', bio: '', languages: 'Bengali',
+    experience: '', hourlyRate: '', bio: '', languages: 'Bengali',
   });
+
+  const toggleCat = (key) => {
+    setCats((prev) => {
+      if (prev.includes(key)) return prev.filter((k) => k !== key);
+      if (prev.length >= 3) return prev; // max 3
+      return [...prev, key];
+    });
+    setErrors((e) => ({ ...e, category: '' }));
+  };
 
   // Step 3: docs
   const [nidFront, setNidFront]   = useState({ file: null, preview: null });
@@ -139,9 +150,9 @@ function WorkerRegister() {
   };
   const v2 = () => {
     const e = {};
-    if (!prof.category)            e.category   = 'Select a category';
-    if (selectedAreas.length === 0) e.areas     = 'Select at least one area';
-    if (!prof.experience)          e.experience = 'Required';
+    if (selectedCats.length === 0)  e.category   = 'কমপক্ষে একটি trade নির্বাচন করুন';
+    if (selectedAreas.length === 0) e.areas      = 'Select at least one area';
+    if (!prof.experience)           e.experience = 'Required';
     return e;
   };
   const v3 = () => {
@@ -162,6 +173,8 @@ function WorkerRegister() {
         body: JSON.stringify({
           ...form, role: 'worker',
           ...prof,
+          categories: selectedCats,
+          category: selectedCats[0] || '',
           areas: selectedAreas,
           subcategories: selectedSvcs,
           languages: prof.languages.split(',').map((l) => l.trim()).filter(Boolean),
@@ -245,41 +258,63 @@ function WorkerRegister() {
         <div className="space-y-4">
           {/* Category */}
           <div>
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Your Trade *</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                আপনার Trade/পেশা *
+              </p>
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-full transition-colors
+                ${selectedCats.length === 3
+                  ? 'bg-amber-100 text-amber-700'
+                  : selectedCats.length > 0
+                    ? 'bg-brand-50 text-brand-700'
+                    : 'bg-gray-100 text-gray-400'}`}>
+                {['০','১','২','৩'][selectedCats.length]}/৩ নির্বাচিত
+              </span>
+            </div>
+            {selectedCats.length === 3 && (
+              <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-2">
+                ⚠️ সর্বোচ্চ ৩টি trade নির্বাচন করা যাবে।
+              </p>
+            )}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {allCategories.map((c) => (
-                <button key={c.key} type="button"
-                  onClick={() => { setProf((f) => ({ ...f, category: c.key })); setErrors((e) => ({ ...e, category: '' })); }}
-                  className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all
-                    ${prof.category === c.key ? 'shadow-sm' : 'bg-gray-50 border-transparent hover:bg-gray-100'}`}
-                  style={prof.category === c.key ? { borderColor: c.color, background: c.bg, color: c.color } : {}}>
-                  <CategoryIcon category={c.key} size={20} />
-                  <span className="text-[10px] font-semibold leading-tight line-clamp-1">{c.label}</span>
-                </button>
-              ))}
+              {allCategories.map((c) => {
+                const on = selectedCats.includes(c.key);
+                const rank = selectedCats.indexOf(c.key) + 1;
+                const disabled = !on && selectedCats.length >= 3;
+                return (
+                  <button key={c.key} type="button"
+                    onClick={() => toggleCat(c.key)}
+                    disabled={disabled}
+                    className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all
+                      ${on ? 'shadow-sm' : disabled ? 'opacity-40 cursor-not-allowed bg-gray-50 border-transparent' : 'bg-gray-50 border-transparent hover:bg-gray-100'}`}
+                    style={on ? { borderColor: c.color, background: c.bg, color: c.color } : {}}>
+                    {on && (
+                      <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full text-white text-[10px] font-black flex items-center justify-center shadow"
+                        style={{ background: c.color }}>
+                        {rank}
+                      </span>
+                    )}
+                    <CategoryIcon category={c.key} size={20} />
+                    <span className="text-[10px] font-semibold leading-tight line-clamp-1 text-center">{c.labelBn}</span>
+                  </button>
+                );
+              })}
             </div>
             {errors.category && <FieldError>{errors.category}</FieldError>}
           </div>
 
-          {/* Areas */}
+          {/* Areas — Division → Zila → Upazila */}
           <div>
             <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-              Service Areas * <span className="font-normal text-gray-400">({selectedAreas.length} selected)</span>
+              সেবা এলাকা নির্বাচন করুন *
+              <span className="font-normal text-gray-400 normal-case ml-1">
+                (Division → জেলা → উপজেলা)
+              </span>
             </p>
-            <input
-              type="text" value={areaSearch} onChange={(e) => setAreaSearch(e.target.value)}
-              placeholder="Search areas…"
-              className="w-full mb-1.5 text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-brand-400 transition-colors placeholder-gray-400"
+            <ServiceAreaPicker
+              selected={selectedAreas}
+              onChange={(v) => { setAreas(v); setErrors((e) => ({ ...e, areas: '' })); }}
             />
-            <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto p-2 border-2 border-gray-200 rounded-xl bg-gray-50 scrollbar-hide">
-              {allAreas.filter((a) => !areaSearch || a.toLowerCase().includes(areaSearch.toLowerCase())).map((a) => (
-                <button key={a} type="button" onClick={() => toggleArea(a)}
-                  className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all
-                    ${selectedAreas.includes(a) ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-gray-600 border-gray-200 hover:border-brand-300'}`}>
-                  {selectedAreas.includes(a) ? '✓ ' : ''}{a}
-                </button>
-              ))}
-            </div>
             {errors.areas && <FieldError>{errors.areas}</FieldError>}
           </div>
 
@@ -290,9 +325,9 @@ function WorkerRegister() {
           <FloatTextarea id="w_bio"  label="About yourself" value={prof.bio}       onChange={setP('bio')}       rows={3} maxLen={300} />
           <FloatInput   id="w_lang" label="Languages (comma-separated)" value={prof.languages} onChange={setP('languages')} icon={LangIcon} />
 
-          {/* Subcategory service selection */}
-          {prof.category && (() => {
-            const subs = getSubcategoriesForCategory(prof.category);
+          {/* Subcategory service selection — for all selected categories */}
+          {selectedCats.length > 0 && (() => {
+            const subs = selectedCats.flatMap((k) => getSubcategoriesForCategory(k));
             if (!subs.length) return null;
             return (
               <div>
@@ -530,6 +565,10 @@ export default function Register() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-gray-50 flex items-center justify-center px-4 py-10">
+      <Helmet>
+        <title>নিবন্ধন | কারিগরি</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <div className="w-full max-w-lg">
         <button type="button" onClick={() => setRole(null)}
           className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-6 transition-colors">

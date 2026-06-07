@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { Camera, Save, CheckCircle2, RefreshCw, MapPin, Star, Phone, Upload, CreditCard, FileText, X, ZoomIn, Languages as LangIcon, MessageSquare, ChevronRight, Heart, Copy, Smartphone } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
-import { getCategoryInfo } from '../constants.js';
+import { getCategoryInfo, CATEGORIES } from '../constants.js';
 import { useConfig } from '../context/ConfigContext.jsx';
 import { CategoryIcon } from '../components/CategoryIcon.jsx';
 import { FloatInput, FloatTextarea, Toggle, Alert, Spinner } from '../components/ui.jsx';
 import { VerificationProgress } from '../components/VerificationBadge.jsx';
+import ServiceAreaPicker from '../components/ServiceAreaPicker.jsx';
 
 /* ── Lightbox ── */
 function Lightbox({ src, onClose }) {
@@ -460,9 +461,7 @@ const STATUS = {
 
 export default function WorkerDashboard() {
   const { user, workerProfile, token, updateWorkerProfile } = useAuth();
-  const { allAreas } = useConfig();
   const fileRef = useRef(null);
-  const [areaSearch, setAreaSearch] = useState('');
 
   const [wp, setWp]                   = useState(workerProfile);
   const [saving, setSaving]           = useState(false);
@@ -473,6 +472,7 @@ export default function WorkerDashboard() {
   const [error, setError]             = useState('');
   const [docError, setDocError]       = useState('');
   const [selectedAreas, setAreas]     = useState(workerProfile?.areas || []);
+  const [selectedCats,  setCats]      = useState(workerProfile?.categories?.length ? workerProfile.categories : (workerProfile?.category ? [workerProfile.category] : []));
   const [nidNumber, setNidNumber]     = useState(workerProfile?.nidNumber || '');
 
   const [form, setForm] = useState({
@@ -508,7 +508,7 @@ export default function WorkerDashboard() {
       const res = await fetch('/api/profile/worker', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
-        body: JSON.stringify({ ...form, areas: selectedAreas, languages: form.languages.split(',').map((l) => l.trim()).filter(Boolean) }),
+        body: JSON.stringify({ ...form, areas: selectedAreas, categories: selectedCats, languages: form.languages.split(',').map((l) => l.trim()).filter(Boolean) }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.message || 'Save failed'); return; }
@@ -684,24 +684,58 @@ export default function WorkerDashboard() {
             <FloatTextarea id="d_bio"   label="Bio / About yourself"                  value={form.bio}       onChange={set('bio')}       rows={4} maxLen={400} />
           </div>
 
-          {/* Service areas */}
+          {/* Trade / Category multi-select (max 3) */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <h3 className="font-bold text-gray-900 mb-1 flex items-center gap-2 text-sm">
-              <MapPin className="w-4 h-4 text-brand-600 shrink-0" /> Service Areas
-              <span className="text-xs font-normal text-gray-400">({selectedAreas.length} selected)</span>
-            </h3>
-            <input type="text" value={areaSearch} onChange={(e) => setAreaSearch(e.target.value)}
-              placeholder="Search areas…"
-              className="w-full mb-2 text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-brand-400 transition-colors placeholder-gray-400" />
-            <div className="flex flex-wrap gap-1.5 max-h-44 overflow-y-auto p-1 scrollbar-hide">
-              {allAreas.filter((a) => !areaSearch || a.toLowerCase().includes(areaSearch.toLowerCase())).map((a) => (
-                <button key={a} type="button" onClick={() => toggleArea(a)}
-                  className={`text-xs px-2.5 py-1.5 rounded-full border font-medium transition-all
-                    ${selectedAreas.includes(a) ? 'bg-brand-600 text-white border-brand-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-brand-300 hover:text-brand-600'}`}>
-                  {selectedAreas.includes(a) ? '✓ ' : ''}{a}
-                </button>
-              ))}
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-bold text-gray-900 text-sm">আপনার Trade/পেশা</h3>
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-full
+                ${selectedCats.length === 3 ? 'bg-amber-100 text-amber-700' : 'bg-brand-50 text-brand-700'}`}>
+                {selectedCats.length}/৩
+              </span>
             </div>
+            {selectedCats.length === 3 && (
+              <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3">
+                ⚠️ সর্বোচ্চ ৩টি trade নির্বাচন করা যাবে।
+              </p>
+            )}
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              {CATEGORIES.map((c) => {
+                const on = selectedCats.includes(c.key);
+                const rank = selectedCats.indexOf(c.key) + 1;
+                const disabled = !on && selectedCats.length >= 3;
+                return (
+                  <button key={c.key} type="button"
+                    onClick={() => setCats((prev) => {
+                      if (prev.includes(c.key)) return prev.filter((k) => k !== c.key);
+                      if (prev.length >= 3) return prev;
+                      return [...prev, c.key];
+                    })}
+                    disabled={disabled}
+                    className={`relative flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition-all
+                      ${on ? 'shadow-sm' : disabled ? 'opacity-40 cursor-not-allowed bg-gray-50 border-transparent' : 'bg-gray-50 border-transparent hover:bg-gray-100'}`}
+                    style={on ? { borderColor: c.color, background: c.bg, color: c.color } : {}}>
+                    {on && (
+                      <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full text-white text-[10px] font-black flex items-center justify-center shadow"
+                        style={{ background: c.color }}>{rank}</span>
+                    )}
+                    <CategoryIcon category={c.key} size={18} />
+                    <span className="text-[10px] font-semibold leading-tight line-clamp-1 text-center">{c.labelBn}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Service areas — Division → Zila → Upazila */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2 text-sm">
+              <MapPin className="w-4 h-4 text-brand-600 shrink-0" /> সেবা এলাকা
+              <span className="text-xs font-normal text-gray-400">({selectedAreas.length} নির্বাচিত)</span>
+            </h3>
+            <ServiceAreaPicker
+              selected={selectedAreas}
+              onChange={setAreas}
+            />
           </div>
 
           {/* Feedback */}

@@ -114,7 +114,27 @@
   width: max-content;
   animation: marquee-scroll 30s linear infinite;
 }
-.marquee-track:hover { animation-play-state: paused; }
+.marquee-track:hover,
+.marquee-track.paused { animation-play-state: paused; }
+
+/* ── Mobile: disable CSS marquee, use touch-scroll instead ── */
+@media (max-width: 639px) {
+  .marquee-outer {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .marquee-outer::-webkit-scrollbar { display: none; }
+  .marquee-track {
+    animation: none !important;
+    /* show only one copy of the list on mobile */
+    width: max-content;
+  }
+}
+/* Desktop: hide scrollbar, clip overflow for seamless loop */
+@media (min-width: 640px) {
+  .marquee-outer { overflow: hidden; }
+}
 
 @keyframes count-glow {
   0%, 100% { text-shadow: 0 0 8px rgba(34,197,94,0.3); }

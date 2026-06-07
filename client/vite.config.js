@@ -3,7 +3,12 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { compression } from 'vite-plugin-compression2';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  // Drop console.* and debugger in production builds only
+  esbuild: {
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
+  },
+
   plugins: [
     react({
       // Babel fast-refresh only in dev; no overhead in prod
@@ -23,6 +28,8 @@ export default defineConfig({
         // Skip waiting so new SW activates instantly
         skipWaiting: true,
         clientsClaim: true,
+        // Purge old precache on SW update — prevents stale chunk 404s after redeploy
+        cleanupOutdatedCaches: true,
         // Inline small assets into the SW precache list
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4 MB
         runtimeCaching: [
@@ -150,4 +157,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

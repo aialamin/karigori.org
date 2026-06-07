@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
     const { category, area, available, q, sort = 'default', page = 1, limit = 20 } = req.query;
 
     const filter = { status: 'approved', verificationLevel: { $gte: 1 } };
-    if (category)  filter.category = category;
+    if (category)  filter.$or = [{ category }, { categories: category }];
     if (area)      filter.areas = { $in: [new RegExp(area, 'i')] };
     if (available !== undefined) filter.available = available === 'true';
     if (q) {
@@ -52,7 +52,7 @@ router.get('/', async (req, res) => {
         .sort(sortMap[sort] || sortMap.default)
         .skip(skip)
         .limit(parseInt(limit))
-        .select('name photo category areas rating reviewCount experience hourlyRate verified available verificationLevel status subcategories userId')
+        .select('name photo category categories areas rating reviewCount experience hourlyRate verified available verificationLevel status subcategories userId')
         .lean(),
     ]);
 

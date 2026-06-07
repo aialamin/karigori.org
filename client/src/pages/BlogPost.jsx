@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
   Clock, Calendar, Eye, ArrowLeft, ArrowRight, Share2,
   Link2, CheckCircle2, ChevronRight,
-  BookOpen, Tag, User, MessageCircle, ExternalLink,
+  BookOpen, Tag, User, MessageCircle, ExternalLink, Loader2,
 } from 'lucide-react';
-import { BLOGS, BLOG_CATEGORIES, BLOG_AUTHORS } from '../data/blogData.js';
+import { BLOGS as STATIC_BLOGS, BLOG_CATEGORIES, BLOG_AUTHORS } from '../data/blogData.js';
 
 const G = '#006A4E';
 const GD = '#004d38';
@@ -119,21 +119,52 @@ function RelatedCard({ blog }) {
 export default function BlogPost() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const [copied, setCopied] = useState(false);
+  const [copied,    setCopied]   = useState(false);
+  const [blog,      setBlog]     = useState(null);
+  const [allBlogs,  setAllBlogs] = useState(STATIC_BLOGS);
+  const [loading,   setLoading]  = useState(true);
+  const [notFound,  setNotFound] = useState(false);
 
-  const blog = BLOGS.find((b) => b.slug === slug);
+  useEffect(() => {
+    setLoading(true); setNotFound(false);
+    // Fetch full blog post from API first
+    fetch(`/api/blogs/${slug}`)
+      .then((r) => {
+        if (r.status === 404) { setNotFound(true); return null; }
+        return r.ok ? r.json() : null;
+      })
+      .then((data) => {
+        if (data) { setBlog(data); }
+        else if (!notFound) {
+          // Fallback to static
+          const s = STATIC_BLOGS.find((b) => b.slug === slug);
+          if (s) setBlog(s); else setNotFound(true);
+        }
+      })
+      .catch(() => {
+        const s = STATIC_BLOGS.find((b) => b.slug === slug);
+        if (s) setBlog(s); else setNotFound(true);
+      })
+      .finally(() => setLoading(false));
+
+    // Also fetch all blogs for sidebar / prev-next
+    fetch('/api/blogs?limit=50')
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.blogs?.length) setAllBlogs(d.blogs); })
+      .catch(() => {});
+  }, [slug]);
 
   /* Related blogs (same category, different slug) */
   const related = blog
-    ? BLOGS.filter((b) => b.category === blog.category && b.slug !== slug).slice(0, 3)
+    ? allBlogs.filter((b) => b.category === blog.category && b.slug !== slug).slice(0, 3)
     : [];
   const moreBlogs = blog
-    ? BLOGS.filter((b) => b.slug !== slug && !related.find((r) => r.slug === b.slug)).slice(0, 6)
+    ? allBlogs.filter((b) => b.slug !== slug && !related.find((r) => r.slug === b.slug)).slice(0, 6)
     : [];
 
-  const currentIndex = blog ? BLOGS.findIndex((b) => b.slug === slug) : -1;
-  const prevBlog = currentIndex > 0 ? BLOGS[currentIndex - 1] : null;
-  const nextBlog = currentIndex < BLOGS.length - 1 ? BLOGS[currentIndex + 1] : null;
+  const currentIndex = blog ? allBlogs.findIndex((b) => b.slug === slug) : -1;
+  const prevBlog = currentIndex > 0 ? allBlogs[currentIndex - 1] : null;
+  const nextBlog = currentIndex < allBlogs.length - 1 ? allBlogs[currentIndex + 1] : null;
 
   function copyLink() {
     navigator.clipboard.writeText(`${BASE_URL}/blog/${slug}`).then(() => {
@@ -141,8 +172,15 @@ export default function BlogPost() {
     });
   }
 
+  /* Loading */
+  if (loading) return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+    </div>
+  );
+
   /* 404 page */
-  if (!blog) {
+  if (!blog || notFound) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <Helmet><title>আর্টিকেল পাওয়া যায়নি | কারিগরি ব্লগ</title></Helmet>
@@ -439,7 +477,7 @@ export default function BlogPost() {
               {/* All articles */}
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="p-3 space-y-1">
-                  {BLOGS.filter((b) => b.slug !== slug).slice(0, 5).map((b) => {
+                  {allBlogs.filter((b) => b.slug !== slug).slice(0, 5).map((b) => {
                     const bc = getCat(b.category);
                     return (
                       <Link key={b.id} to={`/blog/${b.slug}`}

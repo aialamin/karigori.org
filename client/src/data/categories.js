@@ -287,6 +287,42 @@ export const SERVICE_TREE = [
       },
     ],
   },
+  {
+    key: 'isp_internet', label: 'ISP & Internet Services', labelBn: 'ইন্টারনেট সেবা',
+    icon: 'Wifi', color: '#8b5cf6', bg: '#f5f3ff',
+    subcategories: [
+      {
+        key: 'broadband', label: 'Broadband / ISP', labelBn: 'ব্রডব্যান্ড/ISP',
+        parentKey: 'isp',
+        services: ['Broadband connection','WiFi setup','Router configuration','Cable wiring','Network troubleshoot','WiFi extender setup','LAN installation'],
+        servicesBn: ['ব্রডব্যান্ড কানেকশন','ওয়াইফাই সেটআপ','রাউটার কনফিগ','ক্যাবল ওয়্যারিং','নেটওয়ার্ক ট্রাবলশুট','ওয়াইফাই এক্সটেন্ডার','ল্যান ইনস্টল'],
+      },
+    ],
+  },
+  {
+    key: 'masonry_work', label: 'Mason / Rajmistri', labelBn: 'রাজমিস্ত্রি কাজ',
+    icon: 'Hammer', color: '#b45309', bg: '#fef3c7',
+    subcategories: [
+      {
+        key: 'masonry_services', label: 'Masonry Services', labelBn: 'রাজমিস্ত্রি সেবা',
+        parentKey: 'rajmistri',
+        services: ['Brickwork','Wall construction','Plastering','Tile fitting','Floor work','Foundation repair','Cement work','Grout work'],
+        servicesBn: ['ইটের গাঁথুনি','দেয়াল নির্মাণ','প্লাস্টারিং','টাইলস ফিটিং','ফ্লোর কাজ','ভিত্তি মেরামত','সিমেন্টের কাজ','গ্রাউট কাজ'],
+      },
+    ],
+  },
+  {
+    key: 'contracting', label: 'Contractor Services', labelBn: 'ঠিকাদারি সেবা',
+    icon: 'Building', color: '#0369a1', bg: '#e0f2fe',
+    subcategories: [
+      {
+        key: 'contractor_services', label: 'Construction Contracting', labelBn: 'নির্মাণ ঠিকাদারি',
+        parentKey: 'contractor',
+        services: ['House construction','Renovation','Interior design','Roofing','Sub-contracting','Construction management','Commercial building'],
+        servicesBn: ['বাড়ি নির্মাণ','রিনোভেশন','ইন্টেরিয়র ডিজাইন','ছাদ ও ফ্লোর','সাব-কন্ট্রাক্টিং','নির্মাণ ব্যবস্থাপনা','বাণিজ্যিক ভবন'],
+      },
+    ],
+  },
 ];
 
 /* ── Flat lookup maps ── */

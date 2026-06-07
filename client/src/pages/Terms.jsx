@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { FileText, CheckCircle2, XCircle, AlertTriangle, Scale, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -63,6 +64,12 @@ export default function Terms() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
+      <Helmet>
+        <title>সেবার শর্তাবলী | কারিগরি</title>
+        <meta name="description" content="কারিগরি প্ল্যাটফর্ম ব্যবহারের নিয়মনীতি ও শর্তাবলী। কারিগর ও ক্লায়েন্ট উভয়ের জন্য প্রযোজ্য।" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://karigori.org/terms" />
+      </Helmet>
 
       {/* Hero */}
       <div className="bg-gradient-to-br from-gray-800 to-gray-900 text-white">

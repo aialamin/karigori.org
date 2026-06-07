@@ -9,7 +9,9 @@ import {
 import { CATEGORIES, DHAKA_AREAS } from '../constants.js';
 import { CategoryIcon } from '../components/CategoryIcon.jsx';
 import SEOHead from '../components/SEOHead.jsx';
+import { useConfig } from '../context/ConfigContext.jsx';
 import { useUserLocation } from '../hooks/useUserLocation.js';
+import { useGeoCity } from '../hooks/useGeoCity.js';
 import { parseNaturalQuery, getAIHints } from '../utils/aiSearch.js';
 import { searchServices } from '../data/categories.js';
 import { addSearchHistory, getSearchHistory, saveAreaPref } from '../utils/cookies.js';
@@ -65,6 +67,8 @@ function CountUp({ target, suffix = '', duration = 1800 }) {
 export default function Home() {
   const navigate  = useNavigate();
   const userLoc   = useUserLocation();
+  const geoCity   = useGeoCity();
+  const { allCategories } = useConfig();
 
   const [query,         setQuery]         = useState('');
   const [focused,       setFocused]       = useState(false);
@@ -75,6 +79,15 @@ export default function Home() {
   const [serviceResults,setSvcResults]    = useState([]);
   const inputRef    = useRef(null);
   const dropdownRef = useRef(null);
+
+  // Live stats from backend
+  const [liveStats, setLiveStats] = useState({ workers: 30, categories: 8, areas: 500, jobs: 1200 });
+  useEffect(() => {
+    fetch('/api/stats')
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d) setLiveStats(d); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -157,6 +170,26 @@ export default function Home() {
             যাচাইকৃত প্লাম্বার, ইলেক্ট্রিশিয়ান, ক্লিনার ও আরও পেশাদার —
             সরাসরি যোগাযোগ, কোনো কমিশন নেই।
           </p>
+
+          {/* ── IP-based city banner ── */}
+          {!geoCity.loading && geoCity.slug && !geoCity.dismissed && (
+            <div className="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 mb-5 mx-auto"
+              style={{ background: 'rgba(254,240,138,0.15)', border: '1.5px solid rgba(254,240,138,0.4)' }}>
+              <MapPin className="w-4 h-4 text-yellow-300 shrink-0" />
+              <span className="text-sm text-white/90">
+                আপনি <strong className="text-yellow-300">{geoCity.nameBn}ে</strong> আছেন?
+              </span>
+              <Link to={`/${geoCity.slug}`}
+                className="text-xs font-black px-3 py-1.5 rounded-full ml-1 transition-all active:scale-95"
+                style={{ background: '#fef08a', color: '#004d38' }}>
+                স্থানীয় কারিগর দেখুন →
+              </Link>
+              <button onClick={geoCity.dismiss}
+                className="text-white/40 hover:text-white/70 transition-colors ml-1">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
 
           {/* Location permission modal */}
           {showLocPrompt && (
@@ -333,9 +366,9 @@ export default function Home() {
       <section className="border-t border-white/10" style={{ background: '#004d38' }}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-3 divide-x divide-white/10">
           {[
-            { target: 30,  suffix: '+', label: 'যাচাইকৃত কারিগর',  sub: 'Verified Workers' },
-            { target: 8,   suffix: '',  label: 'সার্ভিস ক্যাটাগরি', sub: 'Categories' },
-            { target: 500, suffix: '+', label: 'বাংলাদেশের এলাকা',  sub: 'Locations' },
+            { target: liveStats.workers,    suffix: '+', label: 'যাচাইকৃত কারিগর',  sub: 'Verified Workers' },
+            { target: allCategories.length || liveStats.categories, suffix: '',  label: 'সার্ভিস ক্যাটাগরি', sub: 'Categories' },
+            { target: liveStats.areas,      suffix: '+', label: 'বাংলাদেশের এলাকা',  sub: 'Locations' },
           ].map(({ target, suffix, label, sub }) => (
             <div key={label} className="flex flex-col items-center text-center px-4 py-2">
               <span className="text-3xl sm:text-4xl font-black text-yellow-300" style={{ letterSpacing: '-0.03em' }}>
@@ -356,7 +389,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8">
             <h2 className="section-title">কী সার্ভিস দরকার?</h2>
-            <p className="section-sub">৮টি ক্যাটাগরিতে যাচাইকৃত পেশাদার</p>
+            <p className="section-sub">{toBn(allCategories.length || 11)}টি ক্যাটাগরিতে যাচাইকৃত পেশাদার</p>
             <Link to="/browse" className="inline-flex items-center gap-1 mt-3 text-sm font-semibold text-green-700 hover:text-green-800">
               সব দেখুন <ArrowRight className="w-4 h-4" />
             </Link>
@@ -413,7 +446,7 @@ export default function Home() {
           <h2 className="section-title">ব্যবহারকারীদের অভিজ্ঞতা</h2>
           <p className="section-sub">বাস্তব রিভিউ, বাস্তব মানুষ</p>
         </div>
-        <div className="overflow-hidden">
+        <div className="marquee-outer">
           <div className="marquee-track">
             {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
               <div key={i} className="w-72 sm:w-80 shrink-0 mx-3 bg-white rounded-card shadow-card p-5 flex flex-col gap-3 border border-gray-50">
@@ -550,17 +583,25 @@ function TrustChips() {
     if (!el) return;
     let raf;
     let pos = 0;
+    let isTouching = false;
     const speed = 0.7;
     const half = () => el.scrollWidth / 2;
 
     const tick = () => {
-      if (!el.matches(':hover')) {
+      if (!isTouching) {
         pos += speed;
         if (pos >= half()) pos = 0;
         el.scrollLeft = pos;
       }
       raf = requestAnimationFrame(tick);
     };
+
+    const onTouchStart = () => { isTouching = true; };
+    const onTouchEnd   = () => { isTouching = false; pos = el.scrollLeft; };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchend',   onTouchEnd,   { passive: true });
+    el.addEventListener('touchcancel',onTouchEnd,   { passive: true });
 
     // Only run on mobile
     const mq = window.matchMedia('(max-width: 639px)');
@@ -570,7 +611,13 @@ function TrustChips() {
       else cancelAnimationFrame(raf);
     };
     mq.addEventListener('change', onChange);
-    return () => { cancelAnimationFrame(raf); mq.removeEventListener('change', onChange); };
+    return () => {
+      cancelAnimationFrame(raf);
+      mq.removeEventListener('change', onChange);
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchend',   onTouchEnd);
+      el.removeEventListener('touchcancel',onTouchEnd);
+    };
   }, []);
 
   const chip = ({ icon: Icon, label, sub, iconBg, pillBg, pillBorder, textColor }, i) => (

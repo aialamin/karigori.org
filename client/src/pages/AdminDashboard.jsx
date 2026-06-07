@@ -11,6 +11,7 @@ import { getLevelInfo } from '../components/VerificationBadge.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { getCategoryInfo } from '../constants.js';
 import { CategoryIcon, ICON_OPTIONS } from '../components/CategoryIcon.jsx';
+import AdminBlogManager from '../components/AdminBlogManager.jsx';
 
 /* ── Image lightbox ── */
 function Lightbox({ src, onClose }) {
@@ -1730,6 +1731,7 @@ export default function AdminDashboard() {
     { key: 'workers',  label: 'কারিগর',   labelEn: 'Workers',    icon: Users },
     { key: 'clients',  label: 'ক্লায়েন্ট', labelEn: 'Clients',    icon: Users },
     { key: 'allusers', label: 'সব ইউজার', labelEn: 'All Users',  icon: Users },
+    { key: 'blog',     label: 'ব্লগ',      labelEn: 'Blog',       icon: FileText },
     { key: 'analytics',label: 'Analytics', labelEn: 'Analytics',  icon: BarChart3 },
     { key: 'excel',    label: 'Excel',     labelEn: 'Excel',      icon: Download },
     { key: 'settings', label: 'সেটিংস',   labelEn: 'Settings',   icon: LayoutGrid },
@@ -1913,6 +1915,9 @@ export default function AdminDashboard() {
 
         {/* Excel upload */}
         {view === 'excel' && <ExcelUpload token={token} />}
+
+        {/* Blog management */}
+        {view === 'blog' && <AdminBlogManager token={token} />}
 
         {/* Settings */}
         {view === 'settings' && <SettingsPanel token={token} />}

@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { ShieldCheck, AlertTriangle, Phone, CheckCircle2 } from 'lucide-react';
 
 const sections = [
@@ -69,6 +70,12 @@ const safetyTips = [
 export default function Disclaimer() {
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
+      <Helmet>
+        <title>দায়মুক্তি বিবৃতি | কারিগরি</title>
+        <meta name="description" content="কারিগরি প্ল্যাটফর্মের দায়মুক্তি বিবৃতি। আমাদের সেবা ব্যবহারের শর্ত ও সীমাবদ্ধতা সম্পর্কে জানুন।" />
+        <meta name="robots" content="noindex, follow" />
+        <link rel="canonical" href="https://karigori.org/disclaimer" />
+      </Helmet>
 
       {/* Hero */}
       <div className="bg-gradient-to-br from-brand-700 to-emerald-800 text-white">

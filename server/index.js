@@ -12,6 +12,9 @@ import profileRoutes   from './routes/profile.js';
 import configRoutes    from './routes/config.js';
 import analyticsRoutes from './routes/analytics.js';
 import bulkRoutes      from './routes/bulkupload.js';
+import statsRoutes     from './routes/stats.js';
+import blogRoutes      from './routes/blog.js';
+import adminBlogRoutes from './routes/adminBlog.js';
 
 dotenv.config();
 
@@ -57,6 +60,19 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
+// ── Security headers ──
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options',    'nosniff');
+  res.setHeader('X-Frame-Options',           'DENY');
+  res.setHeader('X-XSS-Protection',          '1; mode=block');
+  res.setHeader('Referrer-Policy',           'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy',        'camera=(), microphone=(), geolocation=()');
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  }
+  next();
+});
+
 // ── Gzip all responses (20-70% size reduction on JSON/HTML) ──
 app.use(compression({ level: 6, threshold: 1024 }));
 
@@ -77,6 +93,9 @@ app.use('/api/profile',  profileRoutes);
 app.use('/api/config',     configRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/bulk',      bulkRoutes);
+app.use('/api/stats',      statsRoutes);
+app.use('/api/blogs',      blogRoutes);
+app.use('/api/admin/blogs', adminBlogRoutes);
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 
 // ── API cache hints (CDN / browser) ──
