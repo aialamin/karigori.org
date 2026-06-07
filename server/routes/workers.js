@@ -89,12 +89,17 @@ router.get('/', async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// GET /api/workers/:id
-router.get('/:id', async (req, res) => {
-  if (!isValidObjectId(req.params.id))
-    return res.status(400).json({ message: 'Invalid worker ID' });
+// GET /api/workers/:identifier  — accepts MongoDB ObjectId OR phone number (01XXXXXXXXX)
+router.get('/:identifier', async (req, res) => {
+  const { identifier } = req.params;
   try {
-    const worker = await Worker.findById(req.params.id);
+    let worker;
+    if (isValidObjectId(identifier)) {
+      worker = await Worker.findById(identifier);
+    } else {
+      // Phone number lookup (e.g. 01712345678)
+      worker = await Worker.findOne({ phone: identifier });
+    }
     if (!worker) return res.status(404).json({ message: 'Worker not found' });
     res.json(worker);
   } catch (err) { res.status(500).json({ message: err.message }); }

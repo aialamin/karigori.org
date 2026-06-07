@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { CategoryIcon } from '../components/CategoryIcon.jsx';
 import WorkerCard from '../components/WorkerCard.jsx';
+import { useConfig } from '../context/ConfigContext.jsx';
 
 /* ═══════════════════════════════════════════════
    COLORS
@@ -752,6 +753,7 @@ function PriceTable({ service, cityName }) {
 ═══════════════════════════════════════════════ */
 export default function LocalLanding() {
   const { city: citySlug, service: serviceSlug } = useParams();
+  const { allCategories } = useConfig();
 
   const city    = CITIES[citySlug];
   const service = SERVICES[serviceSlug];
@@ -870,7 +872,7 @@ export default function LocalLanding() {
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-3 divide-x divide-white/10">
             {[
               { target: 30,  suffix: '+', label: 'যাচাইকৃত কারিগর',  sub: 'Verified Workers' },
-              { target: Object.keys(SERVICES).length, suffix: '', label: 'সার্ভিস ক্যাটাগরি', sub: 'Categories' },
+              { target: allCategories.length || 11, suffix: '', label: 'সার্ভিস ক্যাটাগরি', sub: 'Categories' },
               { target: 500, suffix: '+', label: 'বাংলাদেশের এলাকা',  sub: 'Locations' },
             ].map(({ target, suffix, label, sub }) => (
               <div key={label} className="flex flex-col items-center text-center px-4 py-2">

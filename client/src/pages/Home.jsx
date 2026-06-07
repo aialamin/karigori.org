@@ -622,7 +622,7 @@ function TrustChips() {
 
   const chip = ({ icon: Icon, label, sub, iconBg, pillBg, pillBorder, textColor }, i) => (
     <div key={i}
-      className="flex items-center gap-3 px-4 py-3 rounded-2xl shrink-0 transition-all duration-200 hover:scale-105 hover:shadow-md select-none"
+      className="flex items-center gap-3 px-4 py-3 rounded-2xl shrink-0 transition-all duration-150 active:scale-[0.97] active:shadow-none select-none cursor-pointer"
       style={{ background: pillBg, border: `2px solid ${pillBorder}` }}>
       <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-md" style={{ background: iconBg }}>
         <Icon style={{ width: 18, height: 18, color: '#fff' }} />

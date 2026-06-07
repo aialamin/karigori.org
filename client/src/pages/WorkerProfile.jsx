@@ -384,7 +384,7 @@ function ReportModal({ workerId, workerName, open, onClose }) {
    Main Page
 ══════════════════════════════════════════════════════════════════════ */
 export default function WorkerProfile() {
-  const { id }   = useParams();
+  const { id: identifier } = useParams();
   const navigate = useNavigate();
 
   const [worker, setWorker]             = useState(null);
@@ -397,7 +397,7 @@ export default function WorkerProfile() {
 
   const fetchWorker = useCallback(async () => {
     try {
-      const res = await fetch(`/api/workers/${id}`);
+      const res = await fetch(`/api/workers/${identifier}`);
       if (!res.ok) throw new Error('Worker not found');
       const w = await res.json();
       setWorker(w);
@@ -405,7 +405,7 @@ export default function WorkerProfile() {
       addRecentWorker(w._id, w.name, w.category); // cookie
     } catch (err) { setError(err.message); }
     finally { setLoading(false); }
-  }, [id]);
+  }, [identifier]);
 
   useEffect(() => { fetchWorker(); }, [fetchWorker]);
   function onNewReview() { setReviewKey((k) => k + 1); fetchWorker(); setTab('reviews'); }
@@ -674,7 +674,7 @@ export default function WorkerProfile() {
                       See all <ChevronRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  <ReviewsSection key={reviewKey} workerId={id}
+                  <ReviewsSection key={reviewKey} workerId={worker._id}
                     workerRating={worker.rating} workerReviewCount={worker.reviewCount} />
                 </div>
               )}
@@ -693,7 +693,7 @@ export default function WorkerProfile() {
                   <MessageSquare className="w-3.5 h-3.5" /> Write a Review
                 </button>
               </div>
-              <ReviewsSection key={reviewKey} workerId={id}
+              <ReviewsSection key={reviewKey} workerId={worker._id}
                 workerRating={worker.rating} workerReviewCount={worker.reviewCount} />
             </div>
           )}
@@ -716,7 +716,7 @@ export default function WorkerProfile() {
               <p className="text-sm text-gray-400 mb-6">
                 Open to everyone — no account needed. Your review helps others in Dhaka.
               </p>
-              <ReviewForm workerId={id} onSuccess={onNewReview} />
+              <ReviewForm workerId={worker._id} onSuccess={onNewReview} />
             </div>
           )}
         </div>
@@ -818,7 +818,7 @@ export default function WorkerProfile() {
               <Flag className="w-3.5 h-3.5" /> Report this worker
             </button>
 
-            <ReportModal workerId={id} workerName={worker.name}
+            <ReportModal workerId={worker._id} workerName={worker.name}
               open={reportOpen} onClose={() => setReportOpen(false)} />
           </div>
         </aside>

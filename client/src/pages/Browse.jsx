@@ -423,19 +423,21 @@ export default function Browse() {
 
           {!loading && !error && workers.length > 0 && (
             <>
-              {/* Fallback notice — shown when service search had no exact matches */}
-              {fallbackActive && searchQ && catInfo && (
-                <div className="mb-4 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-                  <span className="text-lg shrink-0">💡</span>
-                  <div>
-                    <p className="text-sm font-semibold text-amber-800">
-                      &quot;{searchQ}&quot; এর জন্য বিশেষজ্ঞ পাওয়া যায়নি
+              {/* Fallback banner — always shown when server returns fallback:true */}
+              {fallbackActive && searchQ && (
+                <div className="mb-4 flex items-start gap-3 bg-orange-50 border-l-4 border-orange-400 rounded-r-xl px-4 py-3 shadow-sm">
+                  <span className="text-xl shrink-0 mt-0.5">⚠️</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-orange-800">
+                      &quot;{searchQ}&quot; — কোনো সঠিক ফলাফল পাওয়া যায়নি
                     </p>
-                    <p className="text-xs text-amber-700 mt-0.5">
-                      সব {catInfo.labelBn || catInfo.label} দেখানো হচ্ছে — এরা সবাই এই কাজ করতে পারেন।
-                      <button onClick={() => { setSearchQ(''); setLocalQ(''); }}
-                        className="ml-2 underline font-semibold hover:text-amber-900">
-                        সার্চ মুছুন
+                    <p className="text-xs text-orange-700 mt-1 leading-relaxed">
+                      {catInfo
+                        ? <>সব <strong>{catInfo.labelBn || catInfo.label}</strong> দেখানো হচ্ছে — এরা সবাই এই কাজ করতে পারবেন।</>
+                        : <>সব কারিগর দেখানো হচ্ছে — নিচে থেকে প্রয়োজনীয় কারিগর বেছে নিন।</>}
+                      <button onClick={() => { setSearchQ(''); setLocalQ(''); setFallbackActive(false); }}
+                        className="ml-2 inline-flex items-center gap-1 bg-orange-100 hover:bg-orange-200 text-orange-800 font-semibold px-2 py-0.5 rounded-full text-[11px] transition-colors">
+                        ✕ সার্চ মুছুন
                       </button>
                     </p>
                   </div>

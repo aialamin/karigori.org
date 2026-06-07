@@ -147,9 +147,17 @@ export default defineConfig(({ mode }) => ({
         categories: ['business', 'utilities', 'productivity'],
         prefer_related_applications: false,
 
+        // ── 2025: focus existing window when tapping the home-screen icon ──
+        launch_handler: { client_mode: ['navigate-existing', 'auto'] },
+
+        // ── 2025: Android opens karigori.org links inside the PWA, not the browser ──
+        handle_links: 'preferred',
+
         // ── Icons ──
-        // Both 'any' + 'maskable' so Android adaptive launcher looks great
+        // 96×96 → Android notification badges & smaller surfaces
+        // 192 any + 512 any + 512 maskable → adaptive launcher & splash screen
         icons: [
+          { src: '/icon-96.png',           sizes: '96x96',   type: 'image/png', purpose: 'any' },
           { src: '/icon-192.png',          sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: '/icon-512.png',          sizes: '512x512', type: 'image/png', purpose: 'any' },
           { src: '/icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },

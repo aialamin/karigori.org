@@ -6,6 +6,7 @@ import {
   BadgeCheck, Banknote, HeartHandshake, Phone, Building2, HardHat,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useConfig } from '../context/ConfigContext.jsx';
 
 /* ── FAQ data ── */
 const FAQS = [
@@ -109,6 +110,7 @@ function FaqItem({ q, a }) {
 /* ══════════════════════════════════════════════════════════════════ */
 export default function About() {
   const navigate = useNavigate();
+  const { allCategories } = useConfig();
 
   /* JSON-LD schemas */
   const orgSchema = {
@@ -162,7 +164,7 @@ export default function About() {
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="কারিগরি — Bangladesh Home Service Marketplace" />
-        <meta name="twitter:description" content="যাচাইকৃত কারিগর খুঁজুন। প্লাম্বার, ইলেকট্রিশিয়ান, ক্লিনার সহ ১১টি সার্ভিস ক্যাটাগরি।" />
+        <meta name="twitter:description" content={`যাচাইকৃত কারিগর খুঁজুন। প্লাম্বার, ইলেকট্রিশিয়ান, ক্লিনার সহ ${allCategories.length || 11}টি সার্ভিস ক্যাটাগরি।`} />
 
         {/* JSON-LD */}
         <script type="application/ld+json">{JSON.stringify(orgSchema)}</script>
@@ -234,7 +236,7 @@ export default function About() {
 
             <div className="grid grid-cols-2 gap-4">
               {[
-                { icon: BadgeCheck,  label: '১১টি সার্ভিস ক্যাটাগরি', color: '#006A4E', bg: '#dcfce7' },
+                { icon: BadgeCheck,  label: `${allCategories.length || 11}টি সার্ভিস ক্যাটাগরি`, color: '#006A4E', bg: '#dcfce7' },
                 { icon: MapPin,      label: '২১+ শহরে সেবা',           color: '#1d4ed8', bg: '#dbeafe' },
                 { icon: ShieldCheck, label: 'NID যাচাইকৃত কারিগর',   color: '#7c3aed', bg: '#ede9fe' },
                 { icon: Star,        label: '৪.৮★ গড় রেটিং',          color: '#b45309', bg: '#fef3c7' },

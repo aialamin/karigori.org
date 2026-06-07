@@ -26,7 +26,7 @@ const WorkerCard = memo(function WorkerCard({ worker }) {
   const cat = getCategoryInfo(worker.category);
 
   return (
-    <Link to={`/worker/${worker._id}`}
+    <Link to={`/worker/${worker.phone || worker._id}`}
       className="group block bg-white rounded-card shadow-card hover:shadow-card-hover transition-all duration-200 overflow-hidden hover:-translate-y-0.5">
 
       {/* Colour accent top strip */}
@@ -38,13 +38,16 @@ const WorkerCard = memo(function WorkerCard({ worker }) {
           {/* Avatar */}
           <div className="relative shrink-0">
             <img
-              src={worker.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${worker.name}&backgroundColor=0F172A&textColor=ffffff`}
+              src={worker.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(worker.name || 'K')}&backgroundColor=006A4E&textColor=ffffff`}
               alt={worker.name}
               loading="lazy"
               decoding="async"
+              width="56"
+              height="56"
               className="w-14 h-14 rounded-2xl object-cover bg-gray-100"
               onError={(e) => {
-                e.target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${worker.name}&backgroundColor=0F172A&textColor=ffffff`;
+                e.target.onerror = null; // prevent infinite loop
+                e.target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(worker.name || 'K')}&backgroundColor=006A4E&textColor=ffffff`;
               }}
             />
             {worker.available && (

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { CATEGORIES, DHAKA_AREAS } from '../constants.js';
 import { CategoryIcon } from '../components/CategoryIcon.jsx';
+import { useConfig } from '../context/ConfigContext.jsx';
 import { useUserLocation } from '../hooks/useUserLocation.js';
 import { parseNaturalQuery } from '../utils/aiSearch.js';
 import { searchServices } from '../data/categories.js';
@@ -127,6 +128,7 @@ export default function CityPage() {
   const { city: citySlug } = useParams();
   const navigate = useNavigate();
   const userLoc  = useUserLocation();
+  const { allCategories } = useConfig();
 
   const city = CITIES[citySlug];
   if (!city) return <Navigate to="/browse" replace />;
@@ -427,7 +429,7 @@ export default function CityPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-3 divide-x divide-white/10">
           {[
             { target:30,  suffix:'+', label:'যাচাইকৃত কারিগর',  sub:'Verified Workers' },
-            { target:8,   suffix:'',  label:'সার্ভিস ক্যাটাগরি', sub:'Categories' },
+            { target: allCategories.length || 11, suffix:'',  label:'সার্ভিস ক্যাটাগরি', sub:'Categories' },
             { target:500, suffix:'+', label:'বাংলাদেশের এলাকা',  sub:'Locations' },
           ].map(({ target, suffix, label, sub }) => (
             <div key={label} className="flex flex-col items-center text-center px-4 py-2">
@@ -499,19 +501,19 @@ export default function CityPage() {
 
           {/* Fallback banner */}
           {!wLoading && cityFallback && (
-            <div className="mb-4 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-              <span className="text-lg shrink-0">💡</span>
-              <div>
-                <p className="text-sm font-semibold text-amber-800">
-                  &quot;{workerSearch}&quot; এর জন্য বিশেষজ্ঞ পাওয়া যায়নি
+            <div className="mb-4 flex items-start gap-3 bg-orange-50 border-l-4 border-orange-400 rounded-r-xl px-4 py-3 shadow-sm">
+              <span className="text-xl shrink-0 mt-0.5">⚠️</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-orange-800">
+                  &quot;{workerSearch}&quot; — কোনো সঠিক ফলাফল পাওয়া যায়নি
                 </p>
-                <p className="text-xs text-amber-700 mt-0.5">
+                <p className="text-xs text-orange-700 mt-1 leading-relaxed">
                   {activeCat
-                    ? `সব ${CATEGORIES.find(c=>c.key===activeCat)?.labelBn||activeCat} দেখানো হচ্ছে`
-                    : `${city.namePoss} সব কারিগর দেখানো হচ্ছে`} — এরা সবাই এই কাজ করতে পারেন।
+                    ? <> সব <strong>{CATEGORIES.find(c=>c.key===activeCat)?.labelBn || activeCat}</strong> দেখানো হচ্ছে — এরা সবাই এই কাজ করতে পারবেন।</>
+                    : <> {city.namePoss} সব কারিগর দেখানো হচ্ছে — নিচে থেকে বেছে নিন।</>}
                   <button onClick={() => setWSearch('')}
-                    className="ml-2 underline font-semibold hover:text-amber-900">
-                    সার্চ মুছুন
+                    className="ml-2 inline-flex items-center gap-1 bg-orange-100 hover:bg-orange-200 text-orange-800 font-semibold px-2 py-0.5 rounded-full text-[11px] transition-colors">
+                    ✕ সার্চ মুছুন
                   </button>
                 </p>
               </div>
@@ -557,15 +559,26 @@ export default function CityPage() {
             <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
               <div className="text-4xl mb-3">🔍</div>
               <p className="font-bold text-gray-800 mb-1">কোনো কারিগর পাওয়া যায়নি</p>
-              <p className="text-sm text-slate-500 mb-5">
+              <p className="text-sm text-slate-500 mb-4">
                 {activeCat
-                  ? `${city.nameLoc} ${CATEGORIES.find(c=>c.key===activeCat)?.labelBn||''} এখনো যোগ হয়নি`
-                  : `${city.nameLoc} এখনো কারিগর যোগ হয়নি`}
+                  ? <>{city.nameLoc} <strong>{CATEGORIES.find(c=>c.key===activeCat)?.labelBn||''}</strong> এখনো যোগ হয়নি</>
+                  : <>{city.nameLoc} এখনো কারিগর যোগ হয়নি</>}
               </p>
-              <button onClick={() => { setActiveCat(''); setWSearch(''); }}
-                className="text-sm font-semibold text-green-700 hover:underline">
-                ← সব কারিগর দেখুন
-              </button>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+                {activeCat && (
+                  <button
+                    onClick={() => { setActiveCat(''); setWSearch(''); }}
+                    className="text-sm font-semibold px-4 py-2 rounded-full border border-gray-200 text-gray-600 hover:border-green-500 hover:text-green-700 transition-colors">
+                    সব ক্যাটাগরি দেখুন
+                  </button>
+                )}
+                <button
+                  onClick={() => navigate(activeCat ? `/browse/${activeCat}` : '/browse')}
+                  className="text-sm font-bold px-5 py-2 rounded-full text-white transition-all active:scale-95"
+                  style={{ background: 'linear-gradient(135deg,#006A4E 0%,#004d38 100%)' }}>
+                  সারাদেশে কারিগর খুঁজুন →
+                </button>
+              </div>
             </div>
           )}
         </div>

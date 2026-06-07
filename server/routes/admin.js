@@ -52,6 +52,53 @@ router.get('/workers/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
+/* ── Bulk status change (pending / rejected) ── */
+router.put('/workers/bulk-status', async (req, res) => {
+  try {
+    const { ids, status, note } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0)
+      return res.status(400).json({ message: 'No IDs provided' });
+    if (!['pending', 'rejected'].includes(status))
+      return res.status(400).json({ message: 'Status must be pending or rejected' });
+
+    const update = { status, reviewedAt: new Date() };
+    if (status === 'rejected') {
+      update.verified = false;
+      update.rejectionNote = note || '';
+    }
+    if (status === 'pending') {
+      update.rejectionNote = '';
+      update.reuploadRequested = false;
+    }
+
+    const result = await Worker.updateMany({ _id: { $in: ids } }, update);
+    res.json({ updated: result.modifiedCount });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+/* ── Bulk approve ── */
+router.put('/workers/bulk-approve', async (req, res) => {
+  try {
+    const { ids, targetLevel = 1 } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0)
+      return res.status(400).json({ message: 'No IDs provided' });
+    const lvl = Math.min(4, Math.max(0, parseInt(targetLevel)));
+    const result = await Worker.updateMany(
+      { _id: { $in: ids } },
+      {
+        status: 'approved',
+        verified: lvl >= 2,
+        verificationLevel: lvl,
+        reviewedAt: new Date(),
+        reuploadRequested: false,
+        reuploadNote: '',
+        rejectionNote: '',
+      }
+    );
+    res.json({ updated: result.modifiedCount });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
 /* ── Approve (with optional level jump) ── */
 router.put('/workers/:id/approve', async (req, res) => {
   try {

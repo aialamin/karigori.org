@@ -347,16 +347,26 @@ function WorkerDetail({ workerId, token, onAction }) {
 }
 
 /* ── Worker summary row ── */
-function WorkerRow({ worker, token, onRefresh }) {
+function WorkerRow({ worker, token, onRefresh, selected, onToggleSelect }) {
   const [open, setOpen] = useState(false);
   const cat    = getCategoryInfo(worker.category);
   const status = STATUS[worker.status] || STATUS.pending;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all ${selected ? 'border-indigo-400 ring-2 ring-indigo-100' : 'border-gray-100'}`}>
       {/* Summary row */}
+      <div className="flex items-center gap-2 px-3 sm:px-4">
+        {/* Checkbox */}
+        {onToggleSelect && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleSelect(worker._id); }}
+            className={`shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all
+              ${selected ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300 hover:border-indigo-400'}`}>
+            {selected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+          </button>
+        )}
       <button onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-3 p-4 text-left hover:bg-gray-50 transition-colors">
+        className="flex-1 flex items-center gap-3 py-4 text-left hover:bg-gray-50 transition-colors">
         <img
           src={worker.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${worker.name}&backgroundColor=006A4E&textColor=ffffff`}
           alt={worker.name} className="w-11 h-11 rounded-xl object-cover bg-gray-100 shrink-0"
@@ -413,6 +423,7 @@ function WorkerRow({ worker, token, onRefresh }) {
           {open ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
         </div>
       </button>
+      </div>{/* end flex wrapper */}
 
       {/* Expanded detail */}
       {open && <WorkerDetail workerId={worker._id} token={token} onAction={() => { setOpen(false); onRefresh(); }} />}
@@ -1679,7 +1690,7 @@ export default function AdminDashboard() {
 
   useEffect(() => { loadStats(); }, [loadStats]);
   useEffect(() => {
-    if (view === 'workers') loadWorkers();
+    if (view === 'workers') { setSelectedIds([]); loadWorkers(); }
     else if (view === 'clients') loadClients();
   }, [view, activeTab, loadWorkers, loadClients]);
 
@@ -1699,6 +1710,60 @@ export default function AdminDashboard() {
   const [clientSearch, setClientSearch] = useState('');
   const [clientSort,   setClientSort]   = useState('newest');
   const [workerSearch, setWorkerSearch] = useState('');
+  const [selectedIds,  setSelectedIds]  = useState([]);
+  const [bulkActing,   setBulkActing]   = useState(false);
+  const [bulkMsg,      setBulkMsg]      = useState('');
+
+  function toggleSelect(id) {
+    setSelectedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  }
+  function toggleSelectAll() {
+    const allIds = filteredWorkers.map((w) => w._id);
+    const allSelected = allIds.every((id) => selectedIds.includes(id));
+    setSelectedIds(allSelected ? [] : allIds);
+  }
+  async function bulkApprove(targetLevel) {
+    if (selectedIds.length === 0) return;
+    setBulkActing(true); setBulkMsg('');
+    try {
+      const res = await fetch('/api/admin/workers/bulk-approve', {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedIds, targetLevel }),
+      });
+      const d = await res.json();
+      if (res.ok) {
+        setBulkMsg(`✓ ${d.updated} জন কারিগর L${targetLevel} অ্যাপ্রুভ হয়েছে`);
+        setSelectedIds([]);
+        loadWorkers(); loadStats();
+      } else {
+        setBulkMsg('✗ ' + (d.message || 'সমস্যা হয়েছে'));
+      }
+    } catch { setBulkMsg('✗ নেটওয়ার্ক সমস্যা'); }
+    finally { setBulkActing(false); setTimeout(() => setBulkMsg(''), 4000); }
+  }
+
+  async function bulkSetStatus(status) {
+    if (selectedIds.length === 0) return;
+    const label = status === 'pending' ? 'পেন্ডিং' : 'রিজেক্টেড';
+    setBulkActing(true); setBulkMsg('');
+    try {
+      const res = await fetch('/api/admin/workers/bulk-status', {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedIds, status }),
+      });
+      const d = await res.json();
+      if (res.ok) {
+        setBulkMsg(`✓ ${d.updated} জন কারিগর ${label} করা হয়েছে`);
+        setSelectedIds([]);
+        loadWorkers(); loadStats();
+      } else {
+        setBulkMsg('✗ ' + (d.message || 'সমস্যা হয়েছে'));
+      }
+    } catch { setBulkMsg('✗ নেটওয়ার্ক সমস্যা'); }
+    finally { setBulkActing(false); setTimeout(() => setBulkMsg(''), 4000); }
+  }
 
   const filteredClients = clients.filter((c) => {
     if (!clientSearch.trim()) return true;
@@ -1840,6 +1905,103 @@ export default function AdminDashboard() {
               </p>
             )}
 
+            {/* ── Bulk action toolbar ── */}
+            {!loading && filteredWorkers.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 bg-white border border-gray-100 rounded-2xl px-4 py-2.5 shadow-sm">
+                {/* Select-all checkbox */}
+                <button
+                  onClick={toggleSelectAll}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all
+                    ${filteredWorkers.every((w) => selectedIds.includes(w._id))
+                      ? 'bg-indigo-600 text-white border-indigo-600'
+                      : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-indigo-300'}`}>
+                  <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all
+                    ${filteredWorkers.every((w) => selectedIds.includes(w._id))
+                      ? 'bg-white border-white'
+                      : filteredWorkers.some((w) => selectedIds.includes(w._id))
+                        ? 'bg-indigo-400 border-indigo-400'
+                        : 'border-gray-400'}`}>
+                    {(filteredWorkers.every((w) => selectedIds.includes(w._id)) ||
+                      filteredWorkers.some((w) => selectedIds.includes(w._id))) && (
+                      <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
+                    )}
+                  </div>
+                  {filteredWorkers.every((w) => selectedIds.includes(w._id))
+                    ? 'সব বাতিল'
+                    : `সব সিলেক্ট (${filteredWorkers.length})`}
+                </button>
+
+                {selectedIds.length > 0 && (
+                  <>
+                    {/* Selected count badge */}
+                    <span className="text-xs font-extrabold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-1.5 rounded-xl">
+                      {selectedIds.length}টি সিলেক্টেড
+                    </span>
+
+                    {/* ── pending tab: approve L1 / L2 ── */}
+                    {activeTab === 'pending' && (<>
+                      <button onClick={() => bulkApprove(1)} disabled={bulkActing}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-yellow-500 hover:bg-yellow-600 disabled:opacity-60 text-white transition-all">
+                        {bulkActing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                        L1 অ্যাপ্রুভ
+                      </button>
+                      <button onClick={() => bulkApprove(2)} disabled={bulkActing}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white transition-all">
+                        {bulkActing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                        L2 অ্যাপ্রুভ
+                      </button>
+                      <button onClick={() => bulkSetStatus('rejected')} disabled={bulkActing}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white transition-all">
+                        {bulkActing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
+                        রিজেক্ট
+                      </button>
+                    </>)}
+
+                    {/* ── approved tab: make pending or reject ── */}
+                    {activeTab === 'approved' && (<>
+                      <button onClick={() => bulkSetStatus('pending')} disabled={bulkActing}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 disabled:opacity-60 text-white transition-all">
+                        {bulkActing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Clock className="w-3.5 h-3.5" />}
+                        পেন্ডিং করুন
+                      </button>
+                      <button onClick={() => bulkSetStatus('rejected')} disabled={bulkActing}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white transition-all">
+                        {bulkActing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
+                        রিজেক্ট করুন
+                      </button>
+                    </>)}
+
+                    {/* ── rejected tab: re-approve or move to pending ── */}
+                    {activeTab === 'rejected' && (<>
+                      <button onClick={() => bulkApprove(1)} disabled={bulkActing}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 text-white transition-all">
+                        {bulkActing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                        অ্যাপ্রুভ করুন
+                      </button>
+                      <button onClick={() => bulkSetStatus('pending')} disabled={bulkActing}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 disabled:opacity-60 text-white transition-all">
+                        {bulkActing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Clock className="w-3.5 h-3.5" />}
+                        পেন্ডিং করুন
+                      </button>
+                    </>)}
+
+                    {/* Clear selection */}
+                    <button onClick={() => setSelectedIds([])}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-500 border border-gray-200 transition-all ml-auto">
+                      <X className="w-3.5 h-3.5" /> মুছুন
+                    </button>
+                  </>
+                )}
+
+                {/* Feedback message */}
+                {bulkMsg && (
+                  <span className={`text-xs font-bold px-3 py-1.5 rounded-xl ${bulkMsg.startsWith('✓') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200'}`}>
+                    {bulkMsg}
+                  </span>
+                )}
+              </div>
+            )}
+
             {loading && <div className="flex justify-center py-12"><RefreshCw className="w-6 h-6 text-gray-300 animate-spin" /></div>}
             {!loading && filteredWorkers.length === 0 && (
               <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
@@ -1850,7 +2012,11 @@ export default function AdminDashboard() {
             {!loading && filteredWorkers.length > 0 && (
               <div className="space-y-3">
                 {filteredWorkers.map((w) => (
-                  <WorkerRow key={w._id} worker={w} token={token} onRefresh={() => { loadWorkers(); loadStats(); }} />
+                  <WorkerRow key={w._id} worker={w} token={token}
+                    onRefresh={() => { loadWorkers(); loadStats(); }}
+                    selected={selectedIds.includes(w._id)}
+                    onToggleSelect={toggleSelect}
+                  />
                 ))}
               </div>
             )}
