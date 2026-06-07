@@ -32,6 +32,7 @@ export default function Browse() {
   const [allWorkers, setAllWorkers]    = useState([]);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState(null);
+  const [fallbackActive, setFallbackActive] = useState(false); // true when showing all-category fallback
   const [selectedCat, setSelectedCat] = useState(catParam || '');
   const [selectedArea, setSelectedArea] = useState(searchParams.get('area') || '');
   const [onlyAvailable, setOnlyAvailable] = useState(false);
@@ -45,23 +46,42 @@ export default function Browse() {
   useEffect(() => { if (catParam) setSelectedCat(catParam); }, [catParam]);
 
   const fetchWorkers = useCallback(async () => {
-    setLoading(true); setError(null);
+    setLoading(true); setError(null); setFallbackActive(false);
     try {
-      const p = new URLSearchParams();
-      if (selectedCat)   p.set('category', selectedCat);
-      if (onlyAvailable) p.set('available', 'true');
-      if (sort)          p.set('sort', sort);
-      p.set('limit', '60');
-      const effectiveQ = searchQ || selectedArea;
-      if (effectiveQ) {
-        const expanded = expandLocation(effectiveQ);
-        p.set('q', expanded.length > 1 ? expanded.slice(0, 20).join('|') : effectiveQ);
-      }
-      const res = await fetch(`/api/workers?${p}`);
+      // ── Build primary query ──
+      const buildParams = (withQ) => {
+        const p = new URLSearchParams();
+        if (selectedCat)   p.set('category', selectedCat);
+        if (onlyAvailable) p.set('available', 'true');
+        if (sort)          p.set('sort', sort);
+        p.set('limit', '60');
+        if (withQ) {
+          const effectiveQ = searchQ || selectedArea;
+          if (effectiveQ) {
+            const expanded = expandLocation(effectiveQ);
+            p.set('q', expanded.length > 1 ? expanded.slice(0, 20).join('|') : effectiveQ);
+          }
+        }
+        return p;
+      };
+
+      const res = await fetch(`/api/workers?${buildParams(true)}`);
       if (!res.ok) throw new Error('Failed to load workers');
       const data = await res.json();
-      setAllWorkers(Array.isArray(data.workers) ? data.workers : []);
+      const primary = Array.isArray(data.workers) ? data.workers : [];
+
       if (searchQ) trackSearch();
+
+      // ── Fallback: service/text search returned 0 results within a category ──
+      // Show all workers in that category so users always see relevant people
+      if (primary.length === 0 && searchQ && selectedCat) {
+        setFallbackActive(true);
+        const res2 = await fetch(`/api/workers?${buildParams(false)}`);
+        const data2 = res2.ok ? await res2.json() : { workers: [] };
+        setAllWorkers(Array.isArray(data2.workers) ? data2.workers : []);
+      } else {
+        setAllWorkers(primary);
+      }
     } catch (err) { setError(err.message); }
     finally { setLoading(false); }
   }, [selectedCat, selectedArea, onlyAvailable, sort, searchQ]);
@@ -79,6 +99,7 @@ export default function Browse() {
     setSelectedCat(''); setSelectedArea('');
     setOnlyAvailable(false); setOnlyVerified(false);
     setSort('default'); setSearchQ(''); setLocalQ('');
+    setFallbackActive(false);
   }
 
   function submitSearch(e) {
@@ -314,26 +335,39 @@ export default function Browse() {
         </div>
       </div>
 
-      {/* Subcategory service chips — shown when a category is selected */}
-      {subcategories.length > 0 && (
-        <div className="bg-gray-50 border-b border-gray-200 overflow-x-auto scrollbar-hide">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-2.5 flex items-center gap-2 flex-nowrap">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider shrink-0">সার্ভিস:</span>
-            {subcategories.map((sub) => (
-              sub.services.slice(0, 4).map((svc) => (
-                <button key={svc}
-                  onClick={() => { setSearchQ(svc); setLocalQ(svc); }}
-                  className={`shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full border transition-all whitespace-nowrap
-                    ${searchQ === svc
-                      ? 'bg-trust-500 text-white border-trust-500'
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-trust-300 hover:text-trust-500'}`}>
-                  {svc}
+      {/* Service chips — subcategories when category selected, category shortcuts when none */}
+      <div className="bg-gray-50 border-b border-gray-200 overflow-x-auto scrollbar-hide">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-2.5 flex items-center gap-2 flex-nowrap">
+          {subcategories.length > 0 ? (
+            <>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider shrink-0">সার্ভিস:</span>
+              {subcategories.flatMap((sub) =>
+                sub.services.map((svc) => (
+                  <button key={svc}
+                    onClick={() => { setSearchQ(svc); setLocalQ(svc); }}
+                    className={`shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full border transition-all whitespace-nowrap
+                      ${searchQ === svc
+                        ? 'bg-trust-500 text-white border-trust-500'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-trust-300 hover:text-trust-500'}`}>
+                    {svc}
+                  </button>
+                ))
+              )}
+            </>
+          ) : (
+            <>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider shrink-0">ক্যাটাগরি:</span>
+              {allCategories.map((cat) => (
+                <button key={cat.key}
+                  onClick={() => setSelectedCat(cat.key)}
+                  className="shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full border bg-white text-gray-600 border-gray-200 hover:border-brand-300 hover:text-brand-700 whitespace-nowrap transition-all">
+                  {cat.labelBn || cat.label}
                 </button>
-              ))
-            ))}
-          </div>
+              ))}
+            </>
+          )}
         </div>
-      )}
+      </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 flex gap-6">
 
@@ -393,16 +427,35 @@ export default function Browse() {
           {!loading && !error && workers.length === 0 && (
             <div className="flex flex-col items-center gap-3 py-24 text-center">
               <div className="text-5xl mb-2">🔍</div>
-              <p className="text-gray-700 font-semibold">No workers found</p>
-              <p className="text-gray-400 text-sm">Try changing your filters or search term</p>
+              <p className="text-gray-700 font-semibold">কোনো কারিগর পাওয়া যায়নি</p>
+              <p className="text-gray-400 text-sm">ফিল্টার পরিবর্তন করুন বা অন্য কীওয়ার্ড চেষ্টা করুন</p>
               <button onClick={clearFilters} className="mt-2 border border-gray-300 text-gray-700 text-sm font-semibold px-5 py-2 rounded-full hover:border-trust-500 hover:text-trust-500 transition-colors">
-                Clear Filters
+                সব ফিল্টার সরান
               </button>
             </div>
           )}
 
           {!loading && !error && workers.length > 0 && (
             <>
+              {/* Fallback notice — shown when service search had no exact matches */}
+              {fallbackActive && searchQ && catInfo && (
+                <div className="mb-4 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                  <span className="text-lg shrink-0">💡</span>
+                  <div>
+                    <p className="text-sm font-semibold text-amber-800">
+                      &quot;{searchQ}&quot; এর জন্য বিশেষজ্ঞ পাওয়া যায়নি
+                    </p>
+                    <p className="text-xs text-amber-700 mt-0.5">
+                      সব {catInfo.labelBn || catInfo.label} দেখানো হচ্ছে — এরা সবাই এই কাজ করতে পারেন।
+                      <button onClick={() => { setSearchQ(''); setLocalQ(''); }}
+                        className="ml-2 underline font-semibold hover:text-amber-900">
+                        সার্চ মুছুন
+                      </button>
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Mobile sort */}
               <div className="sm:hidden mb-3 flex items-center gap-2">
                 <span className="text-xs text-gray-400">Sort:</span>

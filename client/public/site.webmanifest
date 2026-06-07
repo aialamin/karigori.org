@@ -1,20 +1,68 @@
 {
-  "name": "কারিগরি — বাংলাদেশ লোকাল সার্ভিস",
+  "id": "/",
+  "name": "কারিগরি — বাংলাদেশের #১ সার্ভিস প্ল্যাটফর্ম",
   "short_name": "কারিগরি",
-  "description": "বাংলাদেশের #১ লোকাল সার্ভিস প্ল্যাটফর্ম",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#006A4E",
+  "description": "যাচাইকৃত প্লাম্বার, ইলেক্ট্রিশিয়ান, ক্লিনার ও আরও পেশাদার — সরাসরি যোগাযোগ, কোনো কমিশন নেই।",
   "lang": "bn",
+  "dir": "ltr",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "start_url": "/?utm_source=pwa",
+  "theme_color": "#006A4E",
+  "background_color": "#006A4E",
+  "categories": ["business", "utilities", "productivity"],
+  "prefer_related_applications": false,
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/icon-192.png",          "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png",          "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
-  "categories": ["business", "utilities"],
   "shortcuts": [
-    { "name": "প্লাম্বার খুঁজুন", "url": "/browse/plumber" },
-    { "name": "ইলেক্ট্রিশিয়ান খুঁজুন", "url": "/browse/electrician" },
-    { "name": "এসি মেকানিক খুঁজুন", "url": "/browse/ac_repair" }
+    {
+      "name": "প্লাম্বার খুঁজুন",
+      "short_name": "প্লাম্বার",
+      "description": "কাছের যাচাইকৃত প্লাম্বার খুঁজুন",
+      "url": "/browse/plumber?utm_source=pwa_shortcut",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "ইলেক্ট্রিশিয়ান খুঁজুন",
+      "short_name": "ইলেক্ট্রিশিয়ান",
+      "description": "কাছের যাচাইকৃত ইলেক্ট্রিশিয়ান খুঁজুন",
+      "url": "/browse/electrician?utm_source=pwa_shortcut",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "এসি মেকানিক খুঁজুন",
+      "short_name": "এসি মেকানিক",
+      "description": "AC সার্ভিস ও মেরামত",
+      "url": "/browse/ac_repair?utm_source=pwa_shortcut",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "কারিগর হিসেবে নিবন্ধন",
+      "short_name": "নিবন্ধন করুন",
+      "description": "আপনার সার্ভিস লিস্ট করুন",
+      "url": "/register?utm_source=pwa_shortcut",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "কারিগরি — কারিগর খুঁজুন"
+    },
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "কারিগরি ডেস্কটপ ভিউ"
+    }
   ]
 }

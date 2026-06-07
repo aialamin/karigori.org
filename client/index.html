@@ -12,7 +12,18 @@
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <meta name="theme-color" content="#006A4E" />
     <meta name="msapplication-TileColor" content="#006A4E" />
+    <meta name="msapplication-TileImage" content="/icon-192.png" />
     <meta name="color-scheme" content="light" />
+
+    <!-- ── PWA / Add to Home Screen ── -->
+    <!-- Android Chrome -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="কারিগরি" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png" />
 
     <!-- Open Graph -->
     <meta property="og:type"        content="website" />
@@ -23,7 +34,7 @@
     <meta property="og:locale"      content="bn_BD" />
     <meta name="twitter:card"       content="summary_large_image" />
     <link rel="canonical" href="https://karigori.org/" />
-    <link rel="manifest" href="/site.webmanifest" />
+    <!-- manifest injected by VitePWA at build time → /site.webmanifest -->
 
     <!-- ── DNS prefetch / preconnect for all external origins ── -->
     <link rel="preconnect"    href="https://fonts.googleapis.com" />

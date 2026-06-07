@@ -26,7 +26,11 @@ router.post('/workers', requireAuth, requireRole('admin'), upload.single('file')
   try {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
-    const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
+    // CSV files must be decoded as UTF-8 string first; .xlsx can use buffer directly
+    const isCsv = req.file.originalname.toLowerCase().endsWith('.csv');
+    const wb = isCsv
+      ? XLSX.read(req.file.buffer.toString('utf8'), { type: 'string' })
+      : XLSX.read(req.file.buffer, { type: 'buffer', codepage: 65001 });
     const ws = wb.Sheets[wb.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
 

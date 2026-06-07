@@ -116,7 +116,7 @@ export default function AllPages() {
             </div>
 
             {/* 6-card grid — 3 col desktop / 2 col mobile */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
               {[
                 {
                   icon: Wrench,
@@ -174,10 +174,10 @@ export default function AllPages() {
                 },
               ].map(({ icon: Icon, val, badge, title, desc, accent, iconBg }) => (
                 <div key={title}
-                  className="group relative bg-white rounded-2xl border border-slate-100 p-5 sm:p-6
-                    flex flex-col gap-4 cursor-default overflow-hidden
+                  className="group relative bg-white rounded-xl border border-slate-100 p-3.5 sm:p-4
+                    flex flex-col gap-2.5 cursor-default overflow-hidden
                     shadow-[0_1px_4px_rgba(0,0,0,0.04),0_4px_16px_rgba(0,0,0,0.04)]
-                    hover:shadow-[0_4px_20px_rgba(0,0,0,0.10)] hover:-translate-y-1
+                    hover:shadow-[0_4px_20px_rgba(0,0,0,0.10)] hover:-translate-y-0.5
                     transition-all duration-300">
 
                   {/* Thin top accent */}
@@ -186,32 +186,32 @@ export default function AllPages() {
                     style={{ background: accent }} />
 
                   {/* Icon + badge row */}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0
+                  <div className="flex items-center justify-between gap-1.5">
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0
                       group-hover:scale-110 transition-transform duration-300"
                       style={{ background: iconBg }}>
-                      <Icon className="w-4 h-4" style={{ color: accent }} />
+                      <Icon className="w-3.5 h-3.5" style={{ color: accent }} />
                     </div>
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
+                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full whitespace-nowrap"
                       style={{ background: iconBg, color: accent }}>
                       {badge}
                     </span>
                   </div>
 
-                  {/* Number — matches section-title scale */}
-                  <p className="text-2xl sm:text-3xl font-black leading-none tracking-tight text-gray-900">
+                  {/* Number */}
+                  <p className="text-xl sm:text-2xl font-bold leading-none tracking-tight text-gray-900">
                     {val}
                   </p>
 
-                  {/* Title + desc — matches app body text */}
-                  <div className="mt-auto space-y-1">
-                    <p className="text-sm font-bold text-gray-800 leading-snug">{title}</p>
-                    <p className="text-xs text-slate-500 leading-relaxed">{desc}</p>
+                  {/* Title + desc */}
+                  <div className="mt-auto space-y-0.5">
+                    <p className="text-xs font-semibold text-gray-700 leading-snug">{title}</p>
+                    <p className="text-[11px] text-slate-400 leading-relaxed">{desc}</p>
                   </div>
 
                   {/* Bottom glow on hover */}
-                  <div className="absolute bottom-0 left-0 right-0 h-24 opacity-0
-                    group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-b-2xl"
+                  <div className="absolute bottom-0 left-0 right-0 h-16 opacity-0
+                    group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-b-xl"
                     style={{ background:`linear-gradient(to top, ${accent}08, transparent)` }} />
                 </div>
               ))}
