@@ -105,7 +105,7 @@ function CategoryBadge({ catKey, small }) {
 /* ─────────────────────────────────────────────
    JSON-LD SCHEMAS
 ───────────────────────────────────────────── */
-const BASE_URL = 'https://karigori.com';
+const BASE_URL = 'https://karigori.org';
 
 // blogListSchema is now built dynamically in component from API data
 
@@ -164,7 +164,8 @@ export default function Blog() {
 
   const featured = BLOGS.filter((b) => b.featured);
   const TRENDING = BLOGS.slice(0, 4);
-  const RECENT   = [...BLOGS].sort(() => Math.random() - 0.5).slice(0, 5);
+  // Sort by id descending (newest first) — deterministic, no random re-renders
+  const RECENT   = [...BLOGS].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 5);
 
   const blogListSchema = {
     '@context': 'https://schema.org',

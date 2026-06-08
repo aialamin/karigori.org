@@ -189,8 +189,10 @@ function Shell() {
       {/* Admin notice modal */}
       {showNotice && notice?.active && (
         <NoticeModal notice={notice} onClose={() => setShowNotice(false)} />
-        <PWAInstallBanner />
       )}
+
+      {/* PWA install bottom-sheet — always mounted, self-manages visibility */}
+      <PWAInstallBanner />
     </div>
   );
 }

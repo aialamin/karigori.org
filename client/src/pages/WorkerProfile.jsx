@@ -199,12 +199,34 @@ function BookingForm({ worker }) {
     return e;
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     const e2 = validate();
     if (Object.keys(e2).length) { setErrors(e2); return; }
     setStatus('submitting');
-    setTimeout(() => setStatus('success'), 1200);
+    try {
+      const res = await fetch('/api/service-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workerId:      worker._id,
+          customerName:  form.name,
+          customerPhone: form.phone,
+          preferredDate: form.date,
+          problem:       form.problem,
+        }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        setErrors({ submit: d.message || 'Request failed. Please try again.' });
+        setStatus('idle');
+        return;
+      }
+      setStatus('success');
+    } catch {
+      setErrors({ submit: 'Network error. Please try again.' });
+      setStatus('idle');
+    }
   }
 
   if (status === 'success') return (
@@ -231,6 +253,7 @@ function BookingForm({ worker }) {
       <FloatInput id="bphone" label="Your Phone Number"      value={form.phone}   onChange={set('phone')}   required error={errors.phone} type="tel" icon={Phone} />
       <FloatInput id="bdate"  label="Preferred Date"         value={form.date}    onChange={set('date')}    type="date" icon={Calendar} />
       <FloatTextarea id="bprob" label="Describe your problem" value={form.problem} onChange={set('problem')} error={errors.problem} rows={4} maxLen={300} />
+      {errors.submit && <Alert type="error">{errors.submit}</Alert>}
       <button type="submit" disabled={status === 'submitting'}
         className="w-full bg-brand-600 hover:bg-brand-700 active:scale-[0.98] disabled:opacity-60 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all mt-1">
         {status === 'submitting' ? <Spinner label="Sending…" /> : <><Send className="w-4 h-4 shrink-0" /><span>Send Request</span></>}
@@ -314,11 +337,12 @@ function ReportModal({ workerId, workerName, open, onClose }) {
     if (!reason) return;
     setStatus('loading');
     try {
-      await fetch(`/api/workers/${workerId}/report`, {
+      const res = await fetch(`/api/workers/${workerId}/report`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason, details, reporterEmail: email }),
       });
+      if (!res.ok) { setStatus('idle'); return; }
       setStatus('done');
     } catch { setStatus('idle'); }
   }

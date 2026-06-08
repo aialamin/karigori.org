@@ -10,7 +10,7 @@ import { BLOGS as STATIC_BLOGS, BLOG_CATEGORIES, BLOG_AUTHORS } from '../data/bl
 
 const G = '#006A4E';
 const GD = '#004d38';
-const BASE_URL = 'https://karigori.com';
+const BASE_URL = 'https://karigori.org';
 
 function getCat(key) { return BLOG_CATEGORIES.find((c) => c.key === key) || BLOG_CATEGORIES[0]; }
 

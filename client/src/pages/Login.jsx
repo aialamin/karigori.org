@@ -216,11 +216,11 @@ export default function Login() {
   useEffect(() => {
     const saved = loadRemembered();
     if (saved) {
-      setId(saved.identifier);
-      setPass(saved.password);
+      setId(saved.identifier || '');
+      // Password intentionally NOT restored — never persisted for security
       setTab(saved.tab || 'worker');
       setRemember(true);
-      setSaved(saved.identifier);
+      setSaved(saved.identifier || '');
     }
   }, []);
 
@@ -251,7 +251,8 @@ export default function Login() {
         setError(`এই অ্যাকাউন্টটি "${data.user.role}" হিসেবে নিবন্ধিত। সঠিক ট্যাব বেছে নিন।`);
         return;
       }
-      if (remember) saveRemembered({ identifier: identifier.trim(), password, tab });
+      // Never store password — only save identifier + tab for convenience
+      if (remember) saveRemembered({ identifier: identifier.trim(), tab });
       else clearRemembered();
       login(data);
     } catch { setError('নেটওয়ার্ক সমস্যা। আবার চেষ্টা করুন।'); }

@@ -14,7 +14,8 @@ import analyticsRoutes from './routes/analytics.js';
 import bulkRoutes      from './routes/bulkupload.js';
 import statsRoutes     from './routes/stats.js';
 import blogRoutes      from './routes/blog.js';
-import adminBlogRoutes from './routes/adminBlog.js';
+import adminBlogRoutes      from './routes/adminBlog.js';
+import serviceRequestRoutes from './routes/serviceRequests.js';
 
 dotenv.config();
 
@@ -94,8 +95,9 @@ app.use('/api/config',     configRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/bulk',      bulkRoutes);
 app.use('/api/stats',      statsRoutes);
-app.use('/api/blogs',      blogRoutes);
-app.use('/api/admin/blogs', adminBlogRoutes);
+app.use('/api/blogs',            blogRoutes);
+app.use('/api/admin/blogs',      adminBlogRoutes);
+app.use('/api/service-requests', serviceRequestRoutes);
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 
 // ── API cache hints (CDN / browser) ──

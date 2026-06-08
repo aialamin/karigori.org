@@ -7,6 +7,14 @@ function isValidObjectId(id) {
   return mongoose.Types.ObjectId.isValid(id);
 }
 
+// Escape user input before using in RegExp — prevents ReDoS / crashes
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Public-safe fields — never expose NID, selfie, reports, admin notes, OTP, etc.
+const PUBLIC_FIELDS = 'name photo category categories areas rating reviewCount experience hourlyRate verified available verificationLevel subcategories languages bio phone userId';
+
 const router = express.Router();
 
 // GET /api/workers — public list (level ≥ 1 + approved)
@@ -16,21 +24,22 @@ router.get('/', async (req, res) => {
 
     const filter = { status: 'approved', verificationLevel: { $gte: 1 } };
     if (category)  filter.$or = [{ category }, { categories: category }];
-    if (area)      filter.areas = { $in: [new RegExp(area, 'i')] };
+    if (area)      filter.areas = { $in: [new RegExp(escapeRegex(area), 'i')] };
     if (available !== undefined) filter.available = available === 'true';
     if (q) {
       // Support pipe-separated OR (from hierarchy expansion: "Upazila1|Upazila2|...")
-      const terms = q.split('|').map((t) => t.trim()).filter(Boolean);
+      const terms = q.split('|').map((t) => t.trim()).filter(Boolean).slice(0, 60);
       if (terms.length === 1) {
+        const safe = escapeRegex(terms[0]);
         filter.$or = [
-          { name:          new RegExp(terms[0], 'i') },
-          { bio:           new RegExp(terms[0], 'i') },
-          { areas:         { $in: [new RegExp(terms[0], 'i')] } },
-          { subcategories: { $in: [new RegExp(terms[0], 'i')] } },
+          { name:          new RegExp(safe, 'i') },
+          { bio:           new RegExp(safe, 'i') },
+          { areas:         { $in: [new RegExp(safe, 'i')] } },
+          { subcategories: { $in: [new RegExp(safe, 'i')] } },
         ];
       } else {
-        // Match any of the expanded areas
-        const areaRegexes = terms.map((t) => new RegExp(`^${t}$`, 'i'));
+        // Match any of the expanded areas (exact, case-insensitive)
+        const areaRegexes = terms.map((t) => new RegExp(`^${escapeRegex(t)}$`, 'i'));
         filter.areas = { $in: areaRegexes };
       }
     }
@@ -91,15 +100,17 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/workers/:identifier  — accepts MongoDB ObjectId OR phone number (01XXXXXXXXX)
+// Only returns approved + verified workers with safe public fields (no NID/reports/etc.)
 router.get('/:identifier', async (req, res) => {
   const { identifier } = req.params;
   try {
+    const publicFilter = { status: 'approved', verificationLevel: { $gte: 1 } };
     let worker;
     if (isValidObjectId(identifier)) {
-      worker = await Worker.findById(identifier);
+      worker = await Worker.findOne({ _id: identifier, ...publicFilter }).select(PUBLIC_FIELDS).lean();
     } else {
-      // Phone number lookup (e.g. 01712345678)
-      worker = await Worker.findOne({ phone: identifier });
+      // Phone number lookup — only exact match, escaped
+      worker = await Worker.findOne({ phone: identifier.replace(/[^0-9+]/g, ''), ...publicFilter }).select(PUBLIC_FIELDS).lean();
     }
     if (!worker) return res.status(404).json({ message: 'Worker not found' });
     res.json(worker);
