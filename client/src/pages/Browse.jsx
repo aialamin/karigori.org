@@ -227,7 +227,11 @@ export default function Browse() {
                 {catInfo ? `${catInfo.label}${selectedArea ? ` — ${selectedArea}` : ''}` : 'সব কারিগর — বাংলাদেশ'}
               </h1>
               <p className="text-xs text-gray-400 mt-0.5">
-                {loading ? 'খোঁজা হচ্ছে…' : `${workers.length} জন কারিগর পাওয়া গেছে${selectedArea ? ` — ${selectedArea}` : ' — বাংলাদেশ'}`}
+                {loading
+                  ? 'খোঁজা হচ্ছে…'
+                  : fallbackActive
+                    ? `সারাদেশের ${workers.length} জন কারিগর দেখানো হচ্ছে`
+                    : `${workers.length} জন কারিগর পাওয়া গেছে${selectedArea ? ` — ${selectedArea}` : ' — বাংলাদেশ'}`}
               </p>
             </div>
 
@@ -423,21 +427,21 @@ export default function Browse() {
 
           {!loading && !error && workers.length > 0 && (
             <>
-              {/* Fallback banner — always shown when server returns fallback:true */}
-              {fallbackActive && searchQ && (
+              {/* Fallback banner — shown when server returns fallback:true (keyword OR area search) */}
+              {fallbackActive && (searchQ || selectedArea) && (
                 <div className="mb-4 flex items-start gap-3 bg-orange-50 border-l-4 border-orange-400 rounded-r-xl px-4 py-3 shadow-sm">
-                  <span className="text-xl shrink-0 mt-0.5">⚠️</span>
+                  <span className="text-xl shrink-0 mt-0.5">🔍</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-orange-800">
-                      &quot;{searchQ}&quot; — কোনো সঠিক ফলাফল পাওয়া যায়নি
+                      &quot;{searchQ || selectedArea}&quot; — কোনো সঠিক ফলাফল পাওয়া যায়নি
                     </p>
                     <p className="text-xs text-orange-700 mt-1 leading-relaxed">
                       {catInfo
                         ? <>সব <strong>{catInfo.labelBn || catInfo.label}</strong> দেখানো হচ্ছে — এরা সবাই এই কাজ করতে পারবেন।</>
                         : <>সব কারিগর দেখানো হচ্ছে — নিচে থেকে প্রয়োজনীয় কারিগর বেছে নিন।</>}
-                      <button onClick={() => { setSearchQ(''); setLocalQ(''); setFallbackActive(false); }}
+                      <button onClick={() => { setSearchQ(''); setLocalQ(''); setSelectedArea(''); setFallbackActive(false); }}
                         className="ml-2 inline-flex items-center gap-1 bg-orange-100 hover:bg-orange-200 text-orange-800 font-semibold px-2 py-0.5 rounded-full text-[11px] transition-colors">
-                        ✕ সার্চ মুছুন
+                        ✕ ফিল্টার মুছুন
                       </button>
                     </p>
                   </div>
